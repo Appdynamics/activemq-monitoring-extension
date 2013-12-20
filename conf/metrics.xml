@@ -1,0 +1,78 @@
+<exclude-metrics>
+	<broker-metrics>
+		<metric name="AverageMessageSize"/>
+		<metric name="JobSchedulerStoreLimit"/>
+		<metric name="JobSchedulerStorePercentUsage"/>
+		<metric name="MaxMessageSize"/>
+		<metric name="MemoryLimit"/>
+		<metric name="MemoryPercentUsage"/>
+		<metric name="MinMessageSize"/>
+		<metric name="StoreLimit"/>
+		<metric name="StorePercentUsage"/>
+		<metric name="TempLimit"/>
+		<metric name="TempPercentUsage"/>
+		<!-- <metric name="TotalConsumerCount"/>
+		<metric name="TotalDequeueCount"/>
+		<metric name="TotalEnqueueCount"/>
+		<metric name="TotalMessageCount"/>
+		<metric name="TotalProducerCount"/>  -->
+	</broker-metrics>
+	
+	<queue-metrics>
+		<metric name="AverageBlockedTime"/>
+		<metric name="AverageEnqueueTime"/>
+		<metric name="AverageMessageSize"/>
+		<metric name="BlockedProducerWarningInterval"/>
+		<metric name="BlockedSends"/>
+		<!-- <metric name="ConsumerCount"/> -->
+		<metric name="CursorMemoryUsage"/>
+		<metric name="CursorPercentUsage"/>
+		<!-- <metric name="DequeueCount"/>
+		<metric name="DispatchCount"/>
+		<metric name="EnqueueCount"/>
+		<metric name="ExpiredCount"/>
+		<metric name="InFlightCount"/>
+		<metric name="MaxAuditDepth"/>
+		<metric name="MaxEnqueueTime"/>
+		<metric name="MaxMessageSize"/> -->
+		<metric name="MaxPageSize"/>
+		<metric name="MaxProducersToAudit"/>
+		<metric name="MemoryLimit"/>
+		<metric name="MemoryPercentUsage"/>
+		<metric name="MemoryUsageByteCount"/>
+		<metric name="MemoryUsagePortion"/>
+		<metric name="MinEnqueueTime"/>
+		<metric name="MinMessageSize"/>
+		<!-- <metric name="ProducerCount"/>
+		<metric name="QueueSize"/> -->
+		<metric name="TotalBlockedTime"/>
+	</queue-metrics>
+	
+	<topic-metrics>
+		<metric name="AverageBlockedTime"/>
+		<metric name="AverageEnqueueTime"/>
+		<metric name="AverageMessageSize"/>
+		<metric name="BlockedProducerWarningInterval"/>
+		<metric name="BlockedSends"/>
+		<!-- <metric name="ConsumerCount"/>
+		<metric name="DequeueCount"/>
+		<metric name="DispatchCount"/>
+		<metric name="EnqueueCount"/>
+		<metric name="ExpiredCount"/>
+		<metric name="InFlightCount"/>
+		<metric name="MaxAuditDepth"/>
+		<metric name="MaxEnqueueTime"/>
+		<metric name="MaxMessageSize"/> -->
+		<metric name="MaxPageSize"/>
+		<metric name="MaxProducersToAudit"/>
+		<metric name="MemoryLimit"/>
+		<metric name="MemoryPercentUsage"/>
+		<metric name="MemoryUsageByteCount"/>
+		<metric name="MemoryUsagePortion"/>
+		<metric name="MinEnqueueTime"/>
+		<metric name="MinMessageSize"/>
+		<!-- <metric name="ProducerCount"/>
+		<metric name="QueueSize"/> -->
+		<metric name="TotalBlockedTime"/>
+	</topic-metrics>
+</exclude-metrics>

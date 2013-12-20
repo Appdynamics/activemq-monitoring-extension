@@ -1,0 +1,33 @@
+<monitor>
+        <name>ActiveMQMonitor</name>
+        <type>managed</type>
+        <description>Apache ActiveMQ monitor</description>
+        <monitor-configuration></monitor-configuration>
+        <monitor-run-task>
+                <execution-style>periodic</execution-style>
+                <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
+                <name>ActiveMQ Monitor Run Task</name>
+                <display-name>ActiveMQ Monitor Task</display-name>
+                <description>ActiveMQ Monitor Task</description>
+                <type>java</type>
+                <execution-timeout-in-secs>60</execution-timeout-in-secs>
+                <task-arguments>
+                        <argument name="host" is-required="true" default-value="localhost" />
+                        <argument name="port" is-required="true" default-value="1099" />
+                        <argument name="username" is-required="true" default-value="admin" />
+                        <argument name="password" is-required="true" default-value="admin" />
+                        
+                        <!-- The queues and topics you want to exclude -->
+                        <!-- Specify their full names as a comma separated values -->
+                        <argument name="exclude-queues" is-required="false" default-value=""/>
+                        <argument name="exclude-topics" is-required="false" default-value=""/>
+                        
+                        <!-- The configuration file which lists out the metrics to be excluded from monitoring on controller-->
+                        <argument name="exclude-metrics-path" is-required="false" default-value="monitors/ActiveMQMonitor/conf/metrics.xml" />
+		       </task-arguments>
+                <java-task>
+                    <classpath>ActiveMQMonitor.jar</classpath>
+                        <impl-class>com.appdynamics.monitors.activemq.ActiveMQMonitor</impl-class>
+                </java-task>
+        </monitor-run-task>
+</monitor>
