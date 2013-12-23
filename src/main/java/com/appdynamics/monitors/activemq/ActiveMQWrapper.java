@@ -45,6 +45,14 @@ public class ActiveMQWrapper
 	protected MBeanServerConnection connection = null;
 	private JMXConnector jmxConnector = null;
 	
+	/**
+	 * Connects to MBeanServer
+	 * @param host	hostname where ActiveMQ is running
+	 * @param port	port
+	 * @param username	username required to connect to ActiveMQ
+	 * @param password	password required to connect to ActiveMQ
+	 * @throws Exception
+	 */
 	protected void connect (final String host, final String port, final String username, final String password) throws Exception
 	{
 		JMXServiceURL url = null;
@@ -68,6 +76,11 @@ public class ActiveMQWrapper
 		}
 	}
 	
+	/**
+	 * Returns BrokerName from MBeans which are in the form (org.apache.activemq:type=Broker,brokerName=localhost,destinationType=Queue,destinationName=TEST.FOO)
+	 * @return BrokerName(localhost)
+	 * @throws Exception
+	 */
 	protected String getBrokerNames() throws Exception
 	{
 		Set<ObjectName> beanNames = connection.queryNames(new ObjectName("org.apache.activemq:*"), null);
@@ -81,6 +94,12 @@ public class ActiveMQWrapper
 		return brokerName;
 	}
 	
+	/**
+	 * Returns metrics of Broker
+	 * @param broker BrokerName
+	 * @return Map with metric name and value
+	 * @throws Exception
+	 */
 	protected Map<String, Object> getBrokerMetrics(String broker) throws Exception	
 	{
 		Map<String, Object> brokerMetrics =  new HashMap<String, Object>();
@@ -90,6 +109,13 @@ public class ActiveMQWrapper
 		return brokerMetrics;
 	}
 	
+	/**
+	 * Returns queue metrics as a nested Map (Map<Queuename, Map<metricname, value>>
+	 * @param broker	brokername
+	 * @param excludeList	list of queues that are to be excluded from monitoring (specified in monitor.xml)
+	 * @return
+	 * @throws Exception
+	 */
 	protected Map<ObjectName, Map<String, Object>> getQueueMetrics(String broker, List<String> excludeList) throws Exception	
 	{
 		Map<ObjectName, Map<String, Object>> queuesMap = new HashMap<ObjectName, Map<String,Object>>();
@@ -108,10 +134,16 @@ public class ActiveMQWrapper
 		
 	}
 	
+	/**
+	 * Returns topic metrics as a nested Map (Map<TopicName, Map<metricname, value>>
+	 * @param broker	brokername
+	 * @param excludeList	list of topics that are to be excluded from monitoring (specified in monitor.xml)
+	 * @return
+	 * @throws Exception
+	 */
 	protected Map<ObjectName, Map<String, Object>> getTopicMetrics(String broker, List<String> excludeList) throws Exception	
 	{
 		Map<ObjectName, Map<String, Object>> topicsMap = new HashMap<ObjectName, Map<String,Object>>();
-		
 		//Get Topics and their metrics
 		Set<ObjectName> topicBeans = this.connection.queryNames(new ObjectName("org.apache.activemq:*,brokerName=" + broker + ",destinationType=Topic"), null);
 		Map<String, Object> topicMetrics = new HashMap<String, Object>();
@@ -126,6 +158,17 @@ public class ActiveMQWrapper
 		return topicsMap;
 	}
 
+	/**
+	 * Returns metrics from a MBean
+	 * @param beanName	BeanName(broker, queue, topic)
+	 * @return	Map of metrics with metric name and value
+	 * @throws InstanceNotFoundException
+	 * @throws IntrospectionException
+	 * @throws ReflectionException
+	 * @throws IOException
+	 * @throws MBeanException
+	 * @throws AttributeNotFoundException
+	 */
 	private Map<String, Object> getMetricsFromMBean(ObjectName beanName)
 			throws InstanceNotFoundException, IntrospectionException,
 			ReflectionException, IOException, MBeanException,

@@ -49,7 +49,7 @@ import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException
 public class ActiveMQMonitor extends AManagedMonitor
 {
 	private static final Logger LOG = Logger.getLogger(ActiveMQMonitor.class);
-	private static final String metricPathPrefix = "Custom Metics|ActiveMQ|";
+	private static final String metricPathPrefix = "Custom Metrics|ActiveMQ|";
 	
 	private Map<String, Object> brokerMetrics =  new HashMap<String, Object>();
 	private Map<ObjectName, Map<String, Object>> queuesMap = new HashMap<ObjectName, Map<String,Object>>();
@@ -59,7 +59,10 @@ public class ActiveMQMonitor extends AManagedMonitor
 	private Set<String> queueExcludeMetrics = new HashSet<String>();
 	private Set<String> topicExcludeMetrics = new HashSet<String>();
 	
-	@Override
+	/*
+	 * Main execution method that uploads the metrics to AppDynamics Controller
+	 * @see com.singularity.ee.agent.systemagent.api.ITask#execute(java.util.Map, com.singularity.ee.agent.systemagent.api.TaskExecutionContext)
+	 */
 	public TaskOutput execute(Map<String, String> taskArguments,
 			TaskExecutionContext arg1) throws TaskExecutionException
 	{
@@ -139,6 +142,15 @@ public class ActiveMQMonitor extends AManagedMonitor
 		}
 	}
 	
+	/**
+	 * Returns the metric to AppDynamics Controller
+	 * @param metricPath	Path where this metric can be viewed on Controller
+	 * @param metricName	Name of the metric
+	 * @param metricValue	Value of the metric
+	 * @param aggregation	Specifies how the values reported during a one-minute period are aggregated (Average OR Observation OR Sum)
+	 * @param timeRollup	specifies how the values are rolled up when converted from from one-minute granularity tables to 10-minute granularity and 60-minute granularity tables over time
+	 * @param cluster		specifies how the metrics are aggregated in a tier (Collective OR Individual)
+	 */
 	private void printMetric(String metricPath, String metricName, Object metricValue, String aggregation, String timeRollup, String cluster)
     {
         MetricWriter metricWriter = super.getMetricWriter(metricPath + metricName, aggregation,
@@ -155,6 +167,11 @@ public class ActiveMQMonitor extends AManagedMonitor
         }
     }
 	
+	/**
+	 * Initializes which metrics are to be displayed from metrics.xml file
+	 * @param excludeCustomMetricsFile	File with metrics that are to be excluded(metrics.xml) in conf directory
+	 * @throws IOException
+	 */
 	private void initializeCustomMetrics(String excludeCustomMetricsFile) throws IOException
 	{
 		
@@ -194,6 +211,12 @@ public class ActiveMQMonitor extends AManagedMonitor
 		}
 	}
 
+	/**
+	 * Reads the metrics from the configuration file
+	 * @param document	Xml file object
+	 * @param devMetrics	broker-metrics OR queue-metrics OR topic-metrics
+	 * @param excludedMetrics	set of metrics that are to be excluded
+	 */
 	private void getMetricsFromXML(Document document, String devMetrics, Set<String> excludedMetrics)
 	{
 		Element item = (Element) document.getElementsByTagName(devMetrics).item(0);
@@ -205,6 +228,10 @@ public class ActiveMQMonitor extends AManagedMonitor
 		}
 	}
 	
+	/**
+	 * Returns metric path where metrics are observed in controller
+	 * @return	metric path
+	 */
 	private String getMetricPrefix()
 	{
 		return metricPathPrefix;
