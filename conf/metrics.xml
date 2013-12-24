@@ -31,10 +31,10 @@
 		<metric name="DispatchCount"/>
 		<metric name="EnqueueCount"/>
 		<metric name="ExpiredCount"/>
-		<metric name="InFlightCount"/>
+		<metric name="InFlightCount"/>  -->
 		<metric name="MaxAuditDepth"/>
 		<metric name="MaxEnqueueTime"/>
-		<metric name="MaxMessageSize"/> -->
+		<metric name="MaxMessageSize"/>
 		<metric name="MaxPageSize"/>
 		<metric name="MaxProducersToAudit"/>
 		<metric name="MemoryLimit"/>
@@ -59,10 +59,10 @@
 		<metric name="DispatchCount"/>
 		<metric name="EnqueueCount"/>
 		<metric name="ExpiredCount"/>
-		<metric name="InFlightCount"/>
+		<metric name="InFlightCount"/> -->
 		<metric name="MaxAuditDepth"/>
 		<metric name="MaxEnqueueTime"/>
-		<metric name="MaxMessageSize"/> -->
+		<metric name="MaxMessageSize"/> 
 		<metric name="MaxPageSize"/>
 		<metric name="MaxProducersToAudit"/>
 		<metric name="MemoryLimit"/>
