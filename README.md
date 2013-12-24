@@ -5,22 +5,30 @@ This extension works only with the Java agent.
 ##Use Case
 
 ActiveMQ is an open source, JMS 1.1 compliant, message-oriented middleware (MOM) from the Apache Software Foundation that provides high-availability, performance, scalability, reliability and security for enterprise messaging. 
-The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging server and presents them in the AppDynamics Metric Browser. 
+The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging server and uploads them to the AppDynamics Metric Browser. 
 
 
 ##Installation
 
+JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please refer [here](http://activemq.apache.org/jmx.html)
+
 1. Run 'ant package' from the active-mq-monitoring-extension directory
 2. Download the file ActiveMQMonitor.zip located in the 'dist' directory into \<machineagent install dir\>/monitors/
 3. Unzip the downloaded file
-4. In \<machineagent install dir\>/monitors/ActiveMQMonitor/, open monitor.xml and configure the ActiveMQ parameters. 
-	<pre>
-	 &lt;argument name="host" is-required="true" default-value="localhost" /&gt;
-     &lt;argument name="port" is-required="true" default-value="1099" /&gt;
-     &lt;argument name="username" is-required="true" default-value="admin" /&gt;
-     &lt;argument name="password" is-required="true" default-value="admin" /&gt;
+4. In \<machineagent install dir\>/monitors/ActiveMQMonitor/, open monitor.xml and configure the ActiveMQ parameters.
+     <pre>
+     &lt;argument name="host" is-required="true" default-value="" /&gt;
+     &lt;argument name="port" is-required="true" default-value="" /&gt;
+     &lt;argument name="username" is-required="true" default-value="" /&gt;
+     &lt;argument name="password" is-required="true" default-value="" /&gt;
+     </pre>
+     The queues and topics you want to exclude, specify their full names as a comma separated values
+     <pre>
      &lt;argument name="exclude-queues" is-required="false" default-value=""/&gt;
-     &lt;argument name="exclude-topics" is-required="false" default-value=""/&gt; 
+     &lt;argument name="exclude-topics" is-required="false" default-value=""/&gt;
+     </pre>
+     The configuration file which lists out the metrics to be excluded from monitoring on controller
+     <pre>
      &lt;argument name="exclude-metrics-path" is-required="false" default-value="monitors/ActiveMQMonitor/conf/metrics.xml" /&gt;
 </pre>
 5. Restart the Machine Agent. 
