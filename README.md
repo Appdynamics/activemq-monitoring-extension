@@ -65,13 +65,29 @@ In the AppDynamics Metric Browser, look for: Application Infrastructure Performa
 </tbody>
 </table>
 
+## Metrics
+
+NOTE: By default, only some of the metrics are reported at broker, queue and topic level. This can be changed in the conf\metrics.xml file.
+
+| Metric Name | Description |
+|----------------|-------------|
+|Enqueue Count				| messages sent to the queue since the last restart|
+|Dequeue Count				| messages removed from the queue (ack'd by consumer) since last restart|
+|Inflight Count			| messages sent to a consumer session and have not received an ack|
+|Dispatch Count			| messages sent to consumer sessions (Dequeue + Inflight)|
+|Queue size				| total number of messages in the queue|
+|Expired Count				| messages that were not delivered because they were expired|
+
+## Custom Dashboard
+![]()
+
 ##Contributing
 
-Always feel free to fork and contribute any changes directly via [GitHub](https://github.com/Appdynamics/f5-monitoring-extension).
+Always feel free to fork and contribute any changes directly here on GitHub.
 
 ##Community
 
-Find out more in the [AppSphere](http://appsphere.appdynamics.com/t5/eXchange/F5-Monitoring-Extension/idi-p/2063) community.
+Find out more in the [AppSphere] community.
 
 ##Support
 
