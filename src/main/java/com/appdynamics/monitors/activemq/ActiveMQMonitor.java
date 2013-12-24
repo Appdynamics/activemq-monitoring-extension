@@ -95,6 +95,8 @@ public class ActiveMQMonitor extends AManagedMonitor
 				throw new RuntimeException("Credentials null or empty in monitor.xml");
 			}
 			
+			activeMQWrapper.initJMXPropertiesBasedOnVersion();
+			
 			String broker = activeMQWrapper.getBrokerNames();
 			
 			// Get map of mbeans with their metrics
@@ -119,7 +121,7 @@ public class ActiveMQMonitor extends AManagedMonitor
 				for(Map.Entry<String, Object> queMetrics : metrics.entrySet())
 				{
 					if(!queueExcludeMetrics.contains(queMetrics.getKey()))
-					printMetric(getMetricPrefix() + broker + "| Queue |" + queueName.getKeyProperty("destinationName") + "|", queMetrics.getKey(), queMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
+					printMetric(getMetricPrefix() + broker + "| Queue |" + queueName.getKeyProperty(activeMQWrapper.destinationName) + "|", queMetrics.getKey(), queMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
 				}
 			}
 			
@@ -131,7 +133,7 @@ public class ActiveMQMonitor extends AManagedMonitor
 				for(Map.Entry<String, Object> topMetrics : metrics.entrySet())
 				{
 					if(!topicExcludeMetrics.contains(topMetrics.getKey()))
-					printMetric(getMetricPrefix() + broker + "| Topic |" + topicName.getKeyProperty("destinationName") + "|", topMetrics.getKey(), topMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
+					printMetric(getMetricPrefix() + broker + "| Topic |" + topicName.getKeyProperty(activeMQWrapper.destinationName) + "|", topMetrics.getKey(), topMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
 				}
 			}
 			return new TaskOutput("ActiveMQ Metric Upload Complete");

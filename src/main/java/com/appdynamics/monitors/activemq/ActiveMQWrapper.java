@@ -45,6 +45,14 @@ public class ActiveMQWrapper
 	protected MBeanServerConnection connection = null;
 	private JMXConnector jmxConnector = null;
 	
+	//JMX Bean properties
+	protected final String MBEAN_DOMAIN_NAME = "org.apache.activemq:";
+	
+	protected String brokerName;
+	protected String brokerType;
+	protected String type;
+	protected String destinationName;
+	
 	/**
 	 * Connects to MBeanServer
 	 * @param host	hostname where ActiveMQ is running
@@ -53,7 +61,7 @@ public class ActiveMQWrapper
 	 * @param password	password required to connect to ActiveMQ
 	 * @throws Exception
 	 */
-	protected void connect (final String host, final String port, final String username, final String password) throws Exception
+	protected void connect (final String host, final String port, final String username, final String password) 
 	{
 		JMXServiceURL url = null;
 		String serviceUrl = "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi";
@@ -67,13 +75,46 @@ public class ActiveMQWrapper
 		} catch (MalformedURLException e)
 		{
 			LOG.error("Error while creating "+serviceUrl+". "+e.getMessage());
+			throw new RuntimeException("Error while creating "+serviceUrl, e);
 		} catch (IOException e)
 		{
 			LOG.error("Connection failed due to wrong credentials/ JMX is not enabled in the configuration or ActiveMQ is down");
+			throw new RuntimeException("Connection failed due to wrong credentials/ JMX is not enabled in the configuration or ActiveMQ is down", e);
+			
 		} catch (Exception e)
 		{
 			LOG.error("Connection failed due to wrong credentials or JMX is not enabled in the configuration");
+			throw new RuntimeException("Connection failed due to wrong credentials or JMX is not enabled in the configuration", e);
 		}
+	}
+	
+	protected void initJMXPropertiesBasedOnVersion() throws Exception
+	{
+		if(isActiveMQVersionOld())
+		{
+			brokerName = "BrokerName";
+			brokerType = "Type";
+			type = "Type";
+			destinationName = "Destination";
+		} else {
+			brokerName = "brokerName";
+			brokerType = "type";
+			type = "destinationType";
+			destinationName = "destinationName";
+		}
+	}
+	
+	private boolean isActiveMQVersionOld() throws Exception
+	{
+		boolean activeMQVersionOld = false;
+		Set<ObjectName> beanNames = connection.queryNames(new ObjectName(MBEAN_DOMAIN_NAME + "*"), null);
+		Iterator<ObjectName> iterator = beanNames.iterator();
+		ObjectName bean = iterator.next();
+		if(bean.getKeyProperty("type") == null)
+		{
+			activeMQVersionOld = true;
+		}
+		return activeMQVersionOld;
 	}
 	
 	/**
@@ -83,11 +124,11 @@ public class ActiveMQWrapper
 	 */
 	protected String getBrokerNames() throws Exception
 	{
-		Set<ObjectName> beanNames = connection.queryNames(new ObjectName("org.apache.activemq:*"), null);
+		Set<ObjectName> beanNames = connection.queryNames(new ObjectName(MBEAN_DOMAIN_NAME + "*"), null);
 		Set<String> brokers = new HashSet<String>();
 		for(ObjectName mbean : beanNames)
 		{
-			brokers.add(mbean.getKeyProperty("brokerName"));
+			brokers.add(mbean.getKeyProperty(brokerName));
 		}
 		Iterator<String> iterator = brokers.iterator();
 		String brokerName = iterator.next();
@@ -104,7 +145,7 @@ public class ActiveMQWrapper
 	{
 		Map<String, Object> brokerMetrics =  new HashMap<String, Object>();
 		// Get Broker and its metrics
-		ObjectName brokerBeanName = new ObjectName("org.apache.activemq:type=Broker,brokerName=" + broker);
+		ObjectName brokerBeanName = new ObjectName(MBEAN_DOMAIN_NAME + brokerType +"=Broker," + brokerName + "=" + broker);
 		brokerMetrics = getMetricsFromMBean(brokerBeanName);
 		return brokerMetrics;
 	}
@@ -120,11 +161,11 @@ public class ActiveMQWrapper
 	{
 		Map<ObjectName, Map<String, Object>> queuesMap = new HashMap<ObjectName, Map<String,Object>>();
 		// Get Queues and their metrics
-		Set<ObjectName> queueBeans = this.connection.queryNames(new ObjectName("org.apache.activemq:*,brokerName=" + broker + ",destinationType=Queue"), null);
+		Set<ObjectName> queueBeans = this.connection.queryNames(new ObjectName(MBEAN_DOMAIN_NAME + "*," + brokerName + "=" + broker + "," + type + "=Queue"), null);
 		Map<String, Object> queueMetrics = new HashMap<String, Object>();
 		for(ObjectName queueBeanName : queueBeans)
 		{
-			if(!excludeList.contains(queueBeanName.getKeyProperty("destinationName")))
+			if(!excludeList.contains(queueBeanName.getKeyProperty(destinationName)))
 			{
 				queueMetrics = getMetricsFromMBean(queueBeanName);
 				queuesMap.put(queueBeanName, queueMetrics);
@@ -145,11 +186,11 @@ public class ActiveMQWrapper
 	{
 		Map<ObjectName, Map<String, Object>> topicsMap = new HashMap<ObjectName, Map<String,Object>>();
 		//Get Topics and their metrics
-		Set<ObjectName> topicBeans = this.connection.queryNames(new ObjectName("org.apache.activemq:*,brokerName=" + broker + ",destinationType=Topic"), null);
+		Set<ObjectName> topicBeans = this.connection.queryNames(new ObjectName(MBEAN_DOMAIN_NAME + "*," + brokerName + "=" + broker + "," + type + "=Topic"), null);
 		Map<String, Object> topicMetrics = new HashMap<String, Object>();
 		for(ObjectName topicBeanName : topicBeans)
 		{
-			if(!excludeList.contains(topicBeanName.getKeyProperty("destinationName")))
+			if(!excludeList.contains(topicBeanName.getKeyProperty(destinationName)))
 			{
 				topicMetrics = getMetricsFromMBean(topicBeanName);
 				topicsMap.put(topicBeanName, topicMetrics);
