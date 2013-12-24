@@ -46,7 +46,7 @@ public class ActiveMQWrapper
 	private JMXConnector jmxConnector = null;
 	
 	//JMX Bean properties
-	protected final String MBEAN_DOMAIN_NAME = "org.apache.activemq:";
+	public final String MBEAN_DOMAIN_NAME = "org.apache.activemq:";
 	
 	protected String brokerName;
 	protected String brokerType;
@@ -88,6 +88,10 @@ public class ActiveMQWrapper
 		}
 	}
 	
+	/**
+	 * Takes care of Changed JMX MBean ObjectNames (http://activemq.apache.org/activemq-580-release.html)
+	 * @throws Exception
+	 */
 	protected void initJMXPropertiesBasedOnVersion() throws Exception
 	{
 		if(isActiveMQVersionOld())
@@ -172,7 +176,6 @@ public class ActiveMQWrapper
 			}
 		}
 		return queuesMap;
-		
 	}
 	
 	/**
