@@ -1,6 +1,6 @@
 # AppDynamics ActiveMQ Monitoring Extension
 
-This extension works only with the Java agent.
+This extension works only with the standalone machine agent.
 
 ##Use Case
 
@@ -10,7 +10,7 @@ The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging se
 
 ##Installation
 
-JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please refer [here](http://activemq.apache.org/jmx.html)
+JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please see [these instructions](http://activemq.apache.org/jmx.html).
 
 1. Run 'ant package' from the active-mq-monitoring-extension directory
 2. Download the file ActiveMQMonitor.zip located in the 'dist' directory into \<machineagent install dir\>/monitors/
@@ -22,12 +22,12 @@ JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please refe
      &lt;argument name="username" is-required="true" default-value="" /&gt;
      &lt;argument name="password" is-required="true" default-value="" /&gt;
      </pre>
-     The queues and topics you want to exclude, specify their full names as a comma separated values
+     For queues and topics you want to exclude, specify their full names as comma-separated values.
      <pre>
      &lt;argument name="exclude-queues" is-required="false" default-value=""/&gt;
      &lt;argument name="exclude-topics" is-required="false" default-value=""/&gt;
      </pre>
-     The configuration file which lists out the metrics to be excluded from monitoring on controller
+     You can edit the configuration file to specify metrics to be excluded from monitoring.
      <pre>
      &lt;argument name="exclude-metrics-path" is-required="false" default-value="monitors/ActiveMQMonitor/conf/metrics.xml" /&gt;
 </pre>
@@ -67,7 +67,7 @@ In the AppDynamics Metric Browser, look for: Application Infrastructure Performa
 
 ## Metrics
 
-NOTE: By default, only some of the metrics are reported at broker, queue and topic level. This can be changed in the conf\metrics.xml file.
+NOTE: By default, only some of the metrics are reported at broker, queue and topic level. This can be changed in the conf/metrics.xml file.
 
 | Metric Name | Description |
 |----------------|-------------|
@@ -87,7 +87,7 @@ Always feel free to fork and contribute any changes directly here on GitHub.
 
 ##Community
 
-Find out more in the [AppSphere] community.
+Find out more in the [AppSphere](http://appsphere.appdynamics.com/t5/eXchange/ActiveMQ-Monitoring-Extension/idi-p/5717) community.
 
 ##Support
 
