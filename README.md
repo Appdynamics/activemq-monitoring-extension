@@ -79,7 +79,7 @@ NOTE: By default, only some of the metrics are reported at broker, queue and top
 |Expired Count				| messages that were not delivered because they were expired|
 
 ## Custom Dashboard
-![](https://github.com/Appdynamics/rabbitmq-monitoring-extension/raw/master/RabbitMQCustomDashboard.png)
+![](https://raw.github.com/Appdynamics/activemq-monitoring-extension/master/ActiveMQDashboard.png)
 
 ##Contributing
 
