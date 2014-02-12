@@ -108,6 +108,7 @@ public class ActiveMQWrapper
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private boolean isActiveMQVersionOld() throws Exception
 	{
 		boolean activeMQVersionOld = false;
@@ -126,6 +127,7 @@ public class ActiveMQWrapper
 	 * @return BrokerName(localhost)
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	protected String getBrokerNames() throws Exception
 	{
 		Set<ObjectName> beanNames = connection.queryNames(new ObjectName(MBEAN_DOMAIN_NAME + "*"), null);
@@ -161,6 +163,7 @@ public class ActiveMQWrapper
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	protected Map<ObjectName, Map<String, Object>> getQueueMetrics(String broker, List<String> excludeList) throws Exception	
 	{
 		Map<ObjectName, Map<String, Object>> queuesMap = new HashMap<ObjectName, Map<String,Object>>();
@@ -185,6 +188,7 @@ public class ActiveMQWrapper
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	protected Map<ObjectName, Map<String, Object>> getTopicMetrics(String broker, List<String> excludeList) throws Exception	
 	{
 		Map<ObjectName, Map<String, Object>> topicsMap = new HashMap<ObjectName, Map<String,Object>>();

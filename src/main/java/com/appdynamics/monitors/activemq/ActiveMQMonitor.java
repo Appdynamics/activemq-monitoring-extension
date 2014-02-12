@@ -86,7 +86,7 @@ public class ActiveMQMonitor extends AManagedMonitor
 			initializeCustomMetrics(excludeCustomMetricsFile);
 			
 			ActiveMQWrapper activeMQWrapper = new ActiveMQWrapper();
-			if(host != null && host !="" && port != null && port !="" && userName != null && userName !="" && password != null && password !="")
+			if(host != null && host !="" && port != null && port !="" && userName != null && password != null)
 			{
 				activeMQWrapper.connect(host, port, userName, password);
 			} else 
