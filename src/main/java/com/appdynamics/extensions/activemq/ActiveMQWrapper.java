@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.appdynamics.monitors.activemq;
+package com.appdynamics.extensions.activemq;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

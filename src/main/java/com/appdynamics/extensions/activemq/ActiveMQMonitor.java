@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.appdynamics.monitors.activemq;
+package com.appdynamics.extensions.activemq;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -60,6 +60,12 @@ public class ActiveMQMonitor extends AManagedMonitor
 	private Set<String> topicExcludeMetrics = new HashSet<String>();
 	
 	private ActiveMQWrapper activeMQWrapper;
+	
+	public ActiveMQMonitor() {
+		String msg = "Using Monitor Version [" + getImplementationVersion() + "]";
+		LOG.info(msg);
+		System.out.println(msg);
+	}
 	
 	/*
 	 * Main execution method that uploads the metrics to AppDynamics Controller
@@ -249,5 +255,9 @@ public class ActiveMQMonitor extends AManagedMonitor
 	private String getMetricPrefix()
 	{
 		return metricPathPrefix;
+	}
+	
+	private static String getImplementationVersion() {
+		return ActiveMQMonitor.class.getPackage().getImplementationTitle();
 	}
 }

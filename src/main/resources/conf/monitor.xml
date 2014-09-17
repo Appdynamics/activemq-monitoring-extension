@@ -23,11 +23,11 @@
                         <argument name="exclude-topics" is-required="false" default-value=""/>
                         
                         <!-- The configuration file which lists out the metrics to be excluded from monitoring on controller-->
-                        <argument name="exclude-metrics-path" is-required="false" default-value="monitors/ActiveMQMonitor/conf/metrics.xml" />
+                        <argument name="exclude-metrics-path" is-required="false" default-value="monitors/ActiveMQMonitor/metrics.xml" />
 		       </task-arguments>
                 <java-task>
-                    <classpath>ActiveMQMonitor.jar</classpath>
-                        <impl-class>com.appdynamics.monitors.activemq.ActiveMQMonitor</impl-class>
+                    <classpath>activemq-monitoring-extension.jar</classpath>
+                        <impl-class>com.appdynamics.extensions.activemq.ActiveMQMonitor</impl-class>
                 </java-task>
         </monitor-run-task>
 </monitor>
