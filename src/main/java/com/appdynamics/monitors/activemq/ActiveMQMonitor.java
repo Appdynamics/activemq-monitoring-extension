@@ -48,7 +48,7 @@ import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException
 
 public class ActiveMQMonitor extends AManagedMonitor
 {
-	private static final Logger LOG = Logger.getLogger(ActiveMQMonitor.class);
+	private static final Logger LOG = Logger.getLogger("com.singularity.extensions.ActiveMQMonitor");
 	private static final String metricPathPrefix = "Custom Metrics|ActiveMQ|";
 	
 	private Map<String, Object> brokerMetrics =  new HashMap<String, Object>();
@@ -59,6 +59,8 @@ public class ActiveMQMonitor extends AManagedMonitor
 	private Set<String> queueExcludeMetrics = new HashSet<String>();
 	private Set<String> topicExcludeMetrics = new HashSet<String>();
 	
+	private ActiveMQWrapper activeMQWrapper;
+	
 	/*
 	 * Main execution method that uploads the metrics to AppDynamics Controller
 	 * @see com.singularity.ee.agent.systemagent.api.ITask#execute(java.util.Map, com.singularity.ee.agent.systemagent.api.TaskExecutionContext)
@@ -68,6 +70,7 @@ public class ActiveMQMonitor extends AManagedMonitor
 	{
 		try
 		{
+			LOG.info("Starting ActiveMQ Monitoring Task");
 			// Establish Connection with proper checks
 			if(!taskArguments.containsKey("host") || !taskArguments.containsKey("port") || !taskArguments.containsKey("username") || !taskArguments.containsKey("password"))
 			{
@@ -85,7 +88,8 @@ public class ActiveMQMonitor extends AManagedMonitor
 			// Set metrics to be shown on controller by excluding those metrics that are listed in metrics.xml
 			initializeCustomMetrics(excludeCustomMetricsFile);
 			
-			ActiveMQWrapper activeMQWrapper = new ActiveMQWrapper();
+			activeMQWrapper = new ActiveMQWrapper();
+			
 			if(host != null && host !="" && port != null && port !="" && userName != null && password != null)
 			{
 				activeMQWrapper.connect(host, port, userName, password);
@@ -136,11 +140,17 @@ public class ActiveMQMonitor extends AManagedMonitor
 					printMetric(getMetricPrefix() + broker + "| Topic |" + topicName.getKeyProperty(activeMQWrapper.destinationName) + "|", topMetrics.getKey(), topMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
 				}
 			}
+			LOG.info("ActiveMQ Metric Upload Complete");
 			return new TaskOutput("ActiveMQ Metric Upload Complete");
-		} catch (Exception e)
-		{
-			LOG.error("ActiveMQ Metric upload failed");
+		} catch (Exception e) {
+			LOG.error("ActiveMQ Metric upload failed", e);
 			return new TaskOutput("ActiveMQ Metric upload failed");
+		} finally {
+			try {
+				activeMQWrapper.close();
+			} catch (IOException e) {
+				// Ignore
+			}
 		}
 	}
 	
@@ -159,13 +169,15 @@ public class ActiveMQMonitor extends AManagedMonitor
                 timeRollup,
                 cluster
         );
-        if (metricValue instanceof Double)
-        {
-            metricWriter.printMetric(String.valueOf(Math.round((Double) metricValue)));
-        } else if (metricValue instanceof Float) {
-            metricWriter.printMetric(String.valueOf(Math.round((Float) metricValue)));
-        } else {
-            metricWriter.printMetric(String.valueOf(metricValue));
+        if(metricValue != null) {
+        	if (metricValue instanceof Double)
+            {
+                metricWriter.printMetric(String.valueOf(Math.round((Double) metricValue)));
+            } else if (metricValue instanceof Float) {
+                metricWriter.printMetric(String.valueOf(Math.round((Float) metricValue)));
+            } else {
+                metricWriter.printMetric(String.valueOf(metricValue));
+            }
         }
     }
 	
@@ -196,16 +208,16 @@ public class ActiveMQMonitor extends AManagedMonitor
 			getMetricsFromXML(document, "topic-metrics", topicExcludeMetrics);
 		} catch (FileNotFoundException e)
 		{
-			LOG.error("Metrics file not found");
+			LOG.error("Metrics file not found", e);
 		} catch (ParserConfigurationException e)
 		{
-			LOG.error("Error in instantiating Document Builder");
+			LOG.error("Error in instantiating Document Builder", e);
 		} catch (SAXException e)
 		{
-			LOG.error("Error in parsing file");
+			LOG.error("Error in parsing file", e);
 		} catch (IOException e)
 		{
-			LOG.error("Error");
+			LOG.error("Error", e);
 		} finally
 		{
 			if(metricsFile != null)

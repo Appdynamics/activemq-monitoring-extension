@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 
 public class ActiveMQWrapper
 {
-	private static final Logger LOG = Logger.getLogger(ActiveMQWrapper.class);
+	private static final Logger LOG = Logger.getLogger("com.singularity.extensions.ActiveMQWrapper");
 	protected MBeanServerConnection connection = null;
 	private JMXConnector jmxConnector = null;
 	
@@ -78,12 +78,12 @@ public class ActiveMQWrapper
 			throw new RuntimeException("Error while creating "+serviceUrl, e);
 		} catch (IOException e)
 		{
-			LOG.error("Connection failed due to wrong credentials/ JMX is not enabled in the configuration or ActiveMQ is down");
+			LOG.error("Connection failed due to wrong credentials/ JMX is not enabled in the configuration or ActiveMQ is down", e);
 			throw new RuntimeException("Connection failed due to wrong credentials/ JMX is not enabled in the configuration or ActiveMQ is down", e);
 			
 		} catch (Exception e)
 		{
-			LOG.error("Connection failed due to wrong credentials or JMX is not enabled in the configuration");
+			LOG.error("Connection failed due to wrong credentials or JMX is not enabled in the configuration", e);
 			throw new RuntimeException("Connection failed due to wrong credentials or JMX is not enabled in the configuration", e);
 		}
 	}
@@ -238,4 +238,14 @@ public class ActiveMQWrapper
 		}
 		return metricsMap;
 	}
+
+	public void close() throws IOException {
+	    if(jmxConnector != null){
+	        if(LOG.isDebugEnabled()) {
+	            LOG.debug("Closing the connection");
+	        }
+	        jmxConnector.close();
+	    }
+	}
+ 
 }
