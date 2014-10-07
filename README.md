@@ -9,11 +9,11 @@ The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging se
 
 ## Prerequisites ##
 
-JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please see [these instructions](http://activemq.apache.org/jmx.html).
+JMX must be enabled in ActiveMQ Messaging server for this extension to gather metrics. To enable, please see [these instructions](http://activemq.apache.org/jmx.html).
 
 ##Installation
 
-1. Run 'mvn clean install' from the active-mq-monitoring-extension directory and find the ActiveMQMonitor.zip in the "target" folder.
+1. Run 'mvn clean install' from the activemq-monitoring-extension directory and find the ActiveMQMonitor.zip in the "target" folder.
 2. Unzip as "ActiveMQMonitor" and copy the "ActiveMQMonitor" directory to `<MACHINE_AGENT_HOME>/monitors`
 
 ## Configuration ##
@@ -21,8 +21,8 @@ JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please see 
 Note : Please make sure to not use tab (\t) while editing yaml files. You may want to validate the yaml file using a [yaml validator](http://yamllint.com/)
 
 1. Configure the ActiveMQ instances by editing the config.yml file in `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/`.
-2. Configure the MBeans in the config.yml. By default, "org.apache.activemq" is all that you may need. But you can add more mbeans as per your requirement.
-   You can also add excludePatterns (regex) to exclude any metric tree from showing up in the AppDynamics controller.
+2. Configure the MBeans in the config.yml. By default, "org.apache.activemq" is configured.
+   You can also add excludePatterns (regex) to exclude any queues, topics or metrics from showing up in the AppDynamics controller.
 
    For eg.
    ```
@@ -71,7 +71,7 @@ The following are the metrics reported to the controller
 * MemoryLimit, MemoryPercentUsage, StoreLimit, StorePercentUsage, TempLimit, TempPercentUsage, TotalConsumerCount, TotalDequeCount, TotalEnqueueCount, TotalMessageCount, TotalProducerCount
 * Queue/Topic Metrics: AverageEnqueueTime, BlockedProducerWarningInterval, ConsumerCount, CursorMemoryUsage, CursorPercentUsage, DequeueCount, DispatchCount, EnqueueCount, ExpiredCount, InflightCount, MaxAuditDepth, MaxEnqueueTime, MaxPageSize, MaxProducersToAudit, MemoryLimit, MemoryPercentUsage, MemoryUsagePortion, MinEnqueueTime, ProducerCount, QueueSize
 
-In addition to the above metrics, we also add a metric called "Metrics Collection Successful" with a value -1 when an error occurs and 1 when the metrics collection is successful.
+In addition to the above metrics, we also add a metric called "Metrics Collection Successful" with a value 0 when an error occurs and 1 when the metrics collection is successful.
 
 Note : By default, a Machine agent or a AppServer agent can send a fixed number of metrics to the controller. To change this limit, please follow the instructions mentioned [here](http://docs.appdynamics.com/display/PRO14S/Metrics+Limits).
 For eg.  
