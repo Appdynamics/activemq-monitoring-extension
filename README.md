@@ -7,46 +7,77 @@ This extension works only with the standalone machine agent.
 ActiveMQ is an open source, JMS 1.1 compliant, message-oriented middleware (MOM) from the Apache Software Foundation that provides high-availability, performance, scalability, reliability and security for enterprise messaging. 
 The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging server and uploads them to the AppDynamics Metric Browser. 
 
-
-##Installation
+## Prerequisites ##
 
 JMX Metrics must be enabled in ActiveMQ Messaging server. To enable, please see [these instructions](http://activemq.apache.org/jmx.html).
 
-1. Run 'mvn clean install' from the active-mq-monitoring-extension directory
-2. Download the file ActiveMQMonitor.zip located in the 'target' directory into \<machineagent install dir\>/monitors/
-3. Unzip the downloaded file
-4. In \<machineagent install dir\>/monitors/ActiveMQMonitor/, open monitor.xml and configure the ActiveMQ parameters.
-     <pre>
-     &lt;argument name="host" is-required="true" default-value="" /&gt;
-     &lt;argument name="port" is-required="true" default-value="" /&gt;
-     &lt;argument name="username" is-required="true" default-value="" /&gt;
-     &lt;argument name="password" is-required="true" default-value="" /&gt;
-     </pre>
-     For queues and topics you want to exclude, specify their full names as comma-separated values.
-     <pre>
-     &lt;argument name="exclude-queues" is-required="false" default-value=""/&gt;
-     &lt;argument name="exclude-topics" is-required="false" default-value=""/&gt;
-     </pre>
-     You can edit the configuration file to specify metrics to be excluded from monitoring.
-     <pre>
-     &lt;argument name="exclude-metrics-path" is-required="false" default-value="monitors/ActiveMQMonitor/metrics.xml" /&gt;
-</pre>
-5. Restart the Machine Agent. 
- 
-In the AppDynamics Metric Browser, look for: Application Infrastructure Performance  | \<Tier\> | Custom Metrics | ActiveMQ
+##Installation
+
+1. Run 'mvn clean install' from the active-mq-monitoring-extension directory and find the ActiveMQMonitor.zip in the "target" folder.
+2. Unzip as "ActiveMQMonitor" and copy the "ActiveMQMonitor" directory to `<MACHINE_AGENT_HOME>/monitors`
+
+## Configuration ##
+
+Note : Please make sure to not use tab (\t) while editing yaml files. You may want to validate the yaml file using a [yaml validator](http://yamllint.com/)
+
+1. Configure the ActiveMQ instances by editing the config.yml file in `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/`.
+2. Configure the MBeans in the config.yml. By default, "org.apache.activemq" is all that you may need. But you can add more mbeans as per your requirement.
+   You can also add excludePatterns (regex) to exclude any metric tree from showing up in the AppDynamics controller.
+
+   For eg.
+   ```
+        # List of ActiveMQ servers
+        servers:
+          - host: "localhost"
+            port: 1099
+            username: "admin"
+            password: "admin"
+            displayName: "localhost"
+
+
+        # ActiveMQ mbeans. Exclude patterns with regex can be used to exclude any unwanted queues, topics or metrics.
+        mbeans:
+          - domainName: "org.apache.activemq"
+            excludePatterns: [
+              localhost|Broker|.*,
+              .*TEST.FOO.*,
+              .*AverageEnqueueTime$
+              ]
+
+        # number of concurrent tasks
+        numberOfThreads: 10
+
+        #timeout for the thread
+        threadTimeout: 30
+
+        #prefix used to show up metrics in AppDynamics
+        metricPrefix:  "Custom Metrics|ActiveMQ|"
+
+   ```
+
+3. Configure the path to the config.yml file by editing the <task-arguments> in the monitor.xml file in the `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/` directory. Below is the sample
+
+     ```
+     <task-arguments>
+         <!-- config file-->
+         <argument name="config-file" is-required="true" default-value="monitors/ActiveMQMonitor/config.yml" />
+          ....
+     </task-arguments>
+    ```
 
 ## Metrics
 
-NOTE: By default, only some of the metrics are reported at broker, queue and topic level. This can be changed in the conf/metrics.xml file.
+The following are the metrics reported to the controller
+* MemoryLimit, MemoryPercentUsage, StoreLimit, StorePercentUsage, TempLimit, TempPercentUsage, TotalConsumerCount, TotalDequeCount, TotalEnqueueCount, TotalMessageCount, TotalProducerCount
+* Queue/Topic Metrics: AverageEnqueueTime, BlockedProducerWarningInterval, ConsumerCount, CursorMemoryUsage, CursorPercentUsage, DequeueCount, DispatchCount, EnqueueCount, ExpiredCount, InflightCount, MaxAuditDepth, MaxEnqueueTime, MaxPageSize, MaxProducersToAudit, MemoryLimit, MemoryPercentUsage, MemoryUsagePortion, MinEnqueueTime, ProducerCount, QueueSize
 
-| Metric Name | Description |
-|----------------|-------------|
-|Enqueue Count				| messages sent to the queue since the last restart|
-|Dequeue Count				| messages removed from the queue (ack'd by consumer) since last restart|
-|Inflight Count			| messages sent to a consumer session and have not received an ack|
-|Dispatch Count			| messages sent to consumer sessions (Dequeue + Inflight)|
-|Queue size				| total number of messages in the queue|
-|Expired Count				| messages that were not delivered because they were expired|
+In addition to the above metrics, we also add a metric called "Metrics Collection Successful" with a value -1 when an error occurs and 1 when the metrics collection is successful.
+
+Note : By default, a Machine agent or a AppServer agent can send a fixed number of metrics to the controller. To change this limit, please follow the instructions mentioned [here](http://docs.appdynamics.com/display/PRO14S/Metrics+Limits).
+For eg.  
+```    
+    java -Dappdynamics.agent.maxMetrics=2500 -jar machineagent.jar
+```
 
 ## Custom Dashboard
 ![](https://raw.github.com/Appdynamics/activemq-monitoring-extension/master/ActiveMQDashboard.png)

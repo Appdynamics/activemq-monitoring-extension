@@ -16,247 +16,187 @@
 
 package com.appdynamics.extensions.activemq;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.management.ObjectName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
+import com.appdynamics.extensions.PathResolver;
+import com.appdynamics.extensions.activemq.config.ConfigUtil;
+import com.appdynamics.extensions.activemq.config.Configuration;
+import com.appdynamics.extensions.activemq.config.Server;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import com.singularity.ee.agent.systemagent.api.TaskExecutionContext;
 import com.singularity.ee.agent.systemagent.api.TaskOutput;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 
-public class ActiveMQMonitor extends AManagedMonitor
-{
-	private static final Logger LOG = Logger.getLogger("com.singularity.extensions.ActiveMQMonitor");
-	private static final String metricPathPrefix = "Custom Metrics|ActiveMQ|";
-	
-	private Map<String, Object> brokerMetrics =  new HashMap<String, Object>();
-	private Map<ObjectName, Map<String, Object>> queuesMap = new HashMap<ObjectName, Map<String,Object>>();
-	private Map<ObjectName, Map<String, Object>> topicsMap = new HashMap<ObjectName, Map<String,Object>>();
-	
-	private Set<String> brokerExcludeMetrics = new HashSet<String>();
-	private Set<String> queueExcludeMetrics = new HashSet<String>();
-	private Set<String> topicExcludeMetrics = new HashSet<String>();
-	
-	private ActiveMQWrapper activeMQWrapper;
-	
+public class ActiveMQMonitor extends AManagedMonitor {
+
+	private static final Logger logger = Logger.getLogger("com.singularity.extensions.ActiveMQMonitor");
+	public static final String CONFIG_ARG = "config-file";
+	public static final String METRIC_SEPARATOR = "|";
+	private static final int DEFAULT_NUMBER_OF_THREADS = 10;
+	public static final int DEFAULT_THREAD_TIMEOUT = 10;
+
+	private ExecutorService threadPool;
+
+	// To load the config files
+	private final static ConfigUtil<Configuration> configUtil = new ConfigUtil<Configuration>();
+
 	public ActiveMQMonitor() {
 		String msg = "Using Monitor Version [" + getImplementationVersion() + "]";
-		LOG.info(msg);
+		logger.info(msg);
 		System.out.println(msg);
 	}
-	
+
 	/*
 	 * Main execution method that uploads the metrics to AppDynamics Controller
-	 * @see com.singularity.ee.agent.systemagent.api.ITask#execute(java.util.Map, com.singularity.ee.agent.systemagent.api.TaskExecutionContext)
+	 * 
+	 * @see
+	 * com.singularity.ee.agent.systemagent.api.ITask#execute(java.util.Map,
+	 * com.singularity.ee.agent.systemagent.api.TaskExecutionContext)
 	 */
-	public TaskOutput execute(Map<String, String> taskArguments,
-			TaskExecutionContext arg1) throws TaskExecutionException
-	{
-		try
-		{
-			LOG.info("Starting ActiveMQ Monitoring Task");
-			// Establish Connection with proper checks
-			if(!taskArguments.containsKey("host") || !taskArguments.containsKey("port") || !taskArguments.containsKey("username") || !taskArguments.containsKey("password"))
-			{
-				LOG.error("Monitor.xml needs to contain all required task arguments");
-				throw new RuntimeException("Monitor.xml needs to contain all required task arguments");
+	public TaskOutput execute(Map<String, String> taskArguments, TaskExecutionContext arg1) throws TaskExecutionException {
+		if (taskArguments != null) {
+			logger.info("Starting ActiveMQ Monitoring Task");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Task Arguments Passed ::" + taskArguments);
 			}
-			String host = taskArguments.get("host");
-			String port = taskArguments.get("port");
-			String userName = taskArguments.get("username");
-			String password = taskArguments.get("password");
-			String excludeCustomMetricsFile = taskArguments.get("exclude-metrics-path");
-			String [] excludeQueues = taskArguments.get("exclude-queues").split(",");
-			String [] excludeTopics = taskArguments.get("exclude-topics").split(",");
-			
-			// Set metrics to be shown on controller by excluding those metrics that are listed in metrics.xml
-			initializeCustomMetrics(excludeCustomMetricsFile);
-			
-			activeMQWrapper = new ActiveMQWrapper();
-			
-			if(host != null && host !="" && port != null && port !="" && userName != null && password != null)
-			{
-				activeMQWrapper.connect(host, port, userName, password);
-			} else 
-			{
-				LOG.error("Credentials null or empty in monitor.xml");
-				throw new RuntimeException("Credentials null or empty in monitor.xml");
-			}
-			
-			activeMQWrapper.initJMXPropertiesBasedOnVersion();
-			
-			String broker = activeMQWrapper.getBrokerNames();
-			
-			// Get map of mbeans with their metrics
-			List<String> excludeQueuesList = Arrays.asList(excludeQueues);
-			List<String> excludeTopicsList = Arrays.asList(excludeTopics);
-			brokerMetrics = activeMQWrapper.getBrokerMetrics(broker);
-			queuesMap = activeMQWrapper.getQueueMetrics(broker, excludeQueuesList);
-			topicsMap = activeMQWrapper.getTopicMetrics(broker, excludeTopicsList);
-			
-			// Print Broker Metrics to Controller
-			for (Map.Entry<String, Object> metric : brokerMetrics.entrySet())
-			{
-				if(!brokerExcludeMetrics.contains(metric.getKey()))
-				printMetric(getMetricPrefix() + broker + "|", metric.getKey(), metric.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
-			}
-			
-			// Print Queue Metrics to Controller
-			for(Entry<ObjectName, Map<String, Object>> queue : queuesMap.entrySet())
-			{
-				ObjectName queueName = queue.getKey();
-				Map<String, Object> metrics = queuesMap.get(queueName);
-				for(Map.Entry<String, Object> queMetrics : metrics.entrySet())
-				{
-					if(!queueExcludeMetrics.contains(queMetrics.getKey()))
-					printMetric(getMetricPrefix() + broker + "| Queue |" + queueName.getKeyProperty(activeMQWrapper.destinationName) + "|", queMetrics.getKey(), queMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
-				}
-			}
-			
-			// Print Topic Metrics to Controller
-			for(Entry<ObjectName, Map<String, Object>> topic : topicsMap.entrySet())
-			{
-				ObjectName topicName = topic.getKey();
-				Map<String, Object> metrics = topicsMap.get(topicName);
-				for(Map.Entry<String, Object> topMetrics : metrics.entrySet())
-				{
-					if(!topicExcludeMetrics.contains(topMetrics.getKey()))
-					printMetric(getMetricPrefix() + broker + "| Topic |" + topicName.getKeyProperty(activeMQWrapper.destinationName) + "|", topMetrics.getKey(), topMetrics.getValue(), MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE, MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE);
-				}
-			}
-			LOG.info("ActiveMQ Metric Upload Complete");
-			return new TaskOutput("ActiveMQ Metric Upload Complete");
-		} catch (Exception e) {
-			LOG.error("ActiveMQ Metric upload failed", e);
-			return new TaskOutput("ActiveMQ Metric upload failed");
-		} finally {
+			String configFilename = getConfigFilename(taskArguments.get(CONFIG_ARG));
 			try {
-				activeMQWrapper.close();
-			} catch (IOException e) {
-				// Ignore
+				// read config file
+				Configuration config = configUtil.readConfig(configFilename, Configuration.class);
+				threadPool = Executors.newFixedThreadPool(config.getNumberOfThreads() == 0 ? DEFAULT_NUMBER_OF_THREADS : config.getNumberOfThreads());
+				List<Future<ActiveMQMetrics>> parallelTasks = createConcurrentTasks(config);
+				List<ActiveMQMetrics> aMetrics = collectMetrics(parallelTasks,
+						config.getThreadTimeout() == 0 ? DEFAULT_THREAD_TIMEOUT : config.getThreadTimeout());
+				printStats(config, aMetrics);
+				logger.info("ActiveMQ Monitoring Task completed successfully");
+				return new TaskOutput("ActiveMQ Monitoring Task completed successfully");
+			} catch (FileNotFoundException e) {
+				logger.error("Config file not found :: " + configFilename, e);
+			} catch (Exception e) {
+				logger.error("Metrics collection failed", e);
+			} finally {
+				if (!threadPool.isShutdown()) {
+					threadPool.shutdown();
+				}
 			}
 		}
+		throw new TaskExecutionException("ActiveMQ monitoring task completed with failures.");
 	}
-	
-	/**
-	 * Returns the metric to AppDynamics Controller
-	 * @param metricPath	Path where this metric can be viewed on Controller
-	 * @param metricName	Name of the metric
-	 * @param metricValue	Value of the metric
-	 * @param aggregation	Specifies how the values reported during a one-minute period are aggregated (Average OR Observation OR Sum)
-	 * @param timeRollup	specifies how the values are rolled up when converted from from one-minute granularity tables to 10-minute granularity and 60-minute granularity tables over time
-	 * @param cluster		specifies how the metrics are aggregated in a tier (Collective OR Individual)
-	 */
-	private void printMetric(String metricPath, String metricName, Object metricValue, String aggregation, String timeRollup, String cluster)
-    {
-        MetricWriter metricWriter = super.getMetricWriter(metricPath + metricName, aggregation,
-                timeRollup,
-                cluster
-        );
-        if(metricValue != null) {
-        	if (metricValue instanceof Double)
-            {
-                metricWriter.printMetric(String.valueOf(Math.round((Double) metricValue)));
-            } else if (metricValue instanceof Float) {
-                metricWriter.printMetric(String.valueOf(Math.round((Float) metricValue)));
-            } else {
-                metricWriter.printMetric(String.valueOf(metricValue));
-            }
-        }
-    }
-	
-	/**
-	 * Initializes which metrics are to be displayed from metrics.xml file
-	 * @param excludeCustomMetricsFile	File with metrics that are to be excluded(metrics.xml) in conf directory
-	 * @throws IOException
-	 */
-	private void initializeCustomMetrics(String excludeCustomMetricsFile) throws IOException
-	{
-		
-		if(excludeCustomMetricsFile == null || excludeCustomMetricsFile.length() == 0)
-		{
-			return;
+
+	private List<ActiveMQMetrics> collectMetrics(List<Future<ActiveMQMetrics>> parallelTasks, int timeout) {
+		List<ActiveMQMetrics> allMetrics = new ArrayList<ActiveMQMetrics>();
+		for (Future<ActiveMQMetrics> aParallelTask : parallelTasks) {
+			ActiveMQMetrics aMetric = null;
+			try {
+				aMetric = aParallelTask.get(timeout, TimeUnit.SECONDS);
+				allMetrics.add(aMetric);
+			} catch (InterruptedException e) {
+				logger.error("Task interrupted." + e);
+			} catch (ExecutionException e) {
+				logger.error("Task execution failed." + e);
+			} catch (TimeoutException e) {
+				logger.error("Task timed out." + e);
+			}
 		}
-		
-		BufferedInputStream metricsFile = null;
-		try
-		{
-			metricsFile = new BufferedInputStream(new FileInputStream(excludeCustomMetricsFile));
-			DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder documentBuilder = builderFactory.newDocumentBuilder();
-			Document document = documentBuilder.parse(metricsFile);
-			document.getDocumentElement().normalize();
-			
-			getMetricsFromXML(document, "broker-metrics", brokerExcludeMetrics);
-			getMetricsFromXML(document, "queue-metrics", queueExcludeMetrics);
-			getMetricsFromXML(document, "topic-metrics", topicExcludeMetrics);
-		} catch (FileNotFoundException e)
-		{
-			LOG.error("Metrics file not found", e);
-		} catch (ParserConfigurationException e)
-		{
-			LOG.error("Error in instantiating Document Builder", e);
-		} catch (SAXException e)
-		{
-			LOG.error("Error in parsing file", e);
-		} catch (IOException e)
-		{
-			LOG.error("Error", e);
-		} finally
-		{
-			if(metricsFile != null)
-				metricsFile.close();
+		return allMetrics;
+	}
+
+	private List<Future<ActiveMQMetrics>> createConcurrentTasks(Configuration config) {
+		List<Future<ActiveMQMetrics>> parallelTasks = Lists.newArrayList();
+		if (config != null && config.getServers() != null) {
+			for (Server server : config.getServers()) {
+				ActiveMQMonitorTask activeMQMonitorTask = new ActiveMQMonitorTask(server, config.getMbeans());
+				parallelTasks.add(getThreadPool().submit(activeMQMonitorTask));
+			}
+		}
+		return parallelTasks;
+	}
+
+	private void printStats(Configuration config, List<ActiveMQMetrics> aMetrics) {
+		for (ActiveMQMetrics aMetric : aMetrics) {
+			StringBuilder metricPath = new StringBuilder();
+			metricPath.append(config.getMetricPrefix()).append(aMetric.getDisplayName()).append(METRIC_SEPARATOR);
+			Map<String, String> metricsForAServer = aMetric.getMetrics();
+			for (Map.Entry<String, String> entry : metricsForAServer.entrySet()) {
+				printAverageAverageIndividual(metricPath.toString() + entry.getKey(), entry.getValue());
+			}
 		}
 	}
 
+	private void printAverageAverageIndividual(String metricPath, String metricValue) {
+		printMetric(metricPath, metricValue, MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE, MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,
+				MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
+	}
+
 	/**
-	 * Reads the metrics from the configuration file
-	 * @param document	Xml file object
-	 * @param devMetrics	broker-metrics OR queue-metrics OR topic-metrics
-	 * @param excludedMetrics	set of metrics that are to be excluded
+	 * Returns the metric to AppDynamics Controller
+	 * 
+	 * @param metricPath
+	 *            Path where this metric can be viewed on Controller
+	 * @param metricName
+	 *            Name of the metric
+	 * @param metricValue
+	 *            Value of the metric
+	 * @param aggregation
+	 *            Specifies how the values reported during a one-minute period
+	 *            are aggregated (Average OR Observation OR Sum)
+	 * @param timeRollup
+	 *            specifies how the values are rolled up when converted from
+	 *            from one-minute granularity tables to 10-minute granularity
+	 *            and 60-minute granularity tables over time
+	 * @param cluster
+	 *            specifies how the metrics are aggregated in a tier (Collective
+	 *            OR Individual)
 	 */
-	private void getMetricsFromXML(Document document, String devMetrics, Set<String> excludedMetrics)
-	{
-		Element item = (Element) document.getElementsByTagName(devMetrics).item(0);
-		NodeList nList = item.getElementsByTagName("metric");
-		for(int i=0; i < nList.getLength(); i++)
-		{
-			Node node = nList.item(i);
-			excludedMetrics.add(node.getAttributes().getNamedItem("name").getTextContent());
+	private void printMetric(String metricPath, String metricValue, String aggregation, String timeRollup, String cluster) {
+		MetricWriter metricWriter = super.getMetricWriter(metricPath, aggregation, timeRollup, cluster);
+		if (metricValue != null) {
+			metricWriter.printMetric(metricValue);
 		}
 	}
-	
-	/**
-	 * Returns metric path where metrics are observed in controller
-	 * @return	metric path
-	 */
-	private String getMetricPrefix()
-	{
-		return metricPathPrefix;
+
+	public ExecutorService getThreadPool() {
+		return threadPool;
 	}
-	
+
+	/**
+	 * Returns a config file name,
+	 * 
+	 * @param filename
+	 * @return String
+	 */
+	private String getConfigFilename(String filename) {
+		if (filename == null) {
+			return "";
+		}
+		// for absolute paths
+		if (new File(filename).exists()) {
+			return filename;
+		}
+		// for relative paths
+		File jarPath = PathResolver.resolveDirectory(AManagedMonitor.class);
+		String configFileName = "";
+		if (!Strings.isNullOrEmpty(filename)) {
+			configFileName = jarPath + File.separator + filename;
+		}
+		return configFileName;
+	}
+
 	private static String getImplementationVersion() {
 		return ActiveMQMonitor.class.getPackage().getImplementationTitle();
 	}
