@@ -15,6 +15,8 @@
  */
 package com.appdynamics.extensions.activemq;
 
+import com.appdynamics.util.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +43,7 @@ public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
 	public static final String METRICS_SEPARATOR = "|";
 	private Server server;
 	private Map<String, MBeanData> mbeanLookup;
-	private JMXConnectionUtil jmxConnector;
+	private JMXConnectionUtil_URL jmxConnector;
 	public static final Logger logger = Logger.getLogger("com.singularity.extensions.ActiveMQMonitorTask");
 
 	public ActiveMQMonitorTask(Server server, MBeanData[] mbeansData) {
@@ -62,7 +64,7 @@ public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
 		ActiveMQMetrics activeMQMetrics = new ActiveMQMetrics();
 		activeMQMetrics.setDisplayName(server.getDisplayName());
 		try {
-			jmxConnector = new JMXConnectionUtil(new JMXConnectionConfig(server.getHost(), server.getPort(), server.getUsername(),
+			jmxConnector = new JMXConnectionUtil_URL(new JMXConnectionConfig_URL(server.getUrl(), server.getUsername(),
 					server.getPassword()));
 			JMXConnector connector = jmxConnector.connect();
 			if (connector != null) {

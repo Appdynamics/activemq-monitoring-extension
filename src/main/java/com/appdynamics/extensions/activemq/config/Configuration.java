@@ -20,7 +20,7 @@ public class Configuration {
 	private Server[] servers;
 	private MBeanData[] mbeans;
 	private int threadTimeout;
-    private int numberOfThreads;
+        private int numberOfThreads;
 	private String metricPrefix;
 
 	public Server[] getServers() {
