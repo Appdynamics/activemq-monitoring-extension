@@ -23,6 +23,9 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
 1. Configure the ActiveMQ instances by editing the config.yml file in `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/`.
 2. Configure the MBeans in the config.yml. By default, "org.apache.activemq" is configured.
    You can also add excludePatterns (regex) to exclude any queues, topics or metrics from showing up in the AppDynamics controller.
+   If you have a standard ActiveMQ installation then just insure the 'host' and 'port' parameters are filled in if you have a 
+   jms URL in the following format: service:jmx:rmi://<host>:<port>/jndi/rmi://<host>:<port>/<object> then use the 'url' parameter
+   instead.
 
    For eg.
    ```
@@ -30,6 +33,7 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
         servers:
           - host: "localhost"
             port: 1099
+            url: ""
             username: "admin"
             password: "admin"
             displayName: "localhost"
