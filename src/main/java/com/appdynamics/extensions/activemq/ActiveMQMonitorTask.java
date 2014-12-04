@@ -74,7 +74,7 @@ public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error JMX-ing into the server :: " + activeMQMetrics.getDisplayName() + e);
+			logger.error("Error JMX-ing into the server :: " + activeMQMetrics.getDisplayName() + " ", e);
 			activeMQMetrics.getMetrics().put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.ERROR_VALUE);
 		} finally {
 			jmxConnector.close();

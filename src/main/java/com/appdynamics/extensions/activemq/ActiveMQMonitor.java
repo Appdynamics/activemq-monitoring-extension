@@ -86,9 +86,9 @@ public class ActiveMQMonitor extends AManagedMonitor {
 				logger.info("ActiveMQ Monitoring Task completed successfully");
 				return new TaskOutput("ActiveMQ Monitoring Task completed successfully");
 			} catch (FileNotFoundException e) {
-				logger.error("Config file not found :: " + configFilename, e);
+				logger.error("Config file not found :: " + configFilename + " ", e);
 			} catch (Exception e) {
-				logger.error("Metrics collection failed", e);
+				logger.error("Metrics collection failed ", e);
 			} finally {
 				if (!threadPool.isShutdown()) {
 					threadPool.shutdown();
@@ -106,11 +106,11 @@ public class ActiveMQMonitor extends AManagedMonitor {
 				aMetric = aParallelTask.get(timeout, TimeUnit.SECONDS);
 				allMetrics.add(aMetric);
 			} catch (InterruptedException e) {
-				logger.error("Task interrupted." + e);
+				logger.error("Task interrupted. ", e);
 			} catch (ExecutionException e) {
-				logger.error("Task execution failed." + e);
+				logger.error("Task execution failed. ", e);
 			} catch (TimeoutException e) {
-				logger.error("Task timed out." + e);
+				logger.error("Task timed out. ", e);
 			}
 		}
 		return allMetrics;
