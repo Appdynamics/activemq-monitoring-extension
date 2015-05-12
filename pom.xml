@@ -45,6 +45,11 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>17.0</version>
+    </dependency>
   </dependencies>
   
   <build>
@@ -164,5 +169,5 @@
     <scm>
         <connection>scm:https://github.com/Appdynamics/activemq-monitoring-extension.git</connection>
     </scm>
-    
+
 </project>
