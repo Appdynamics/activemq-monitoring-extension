@@ -2,6 +2,8 @@
 
 This extension works only with the standalone machine agent.
 
+[![Build Status](https://travis-ci.org/MoriTanosuke/activemq-monitoring-extension.svg)](https://travis-ci.org/MoriTanosuke/activemq-monitoring-extension)
+
 ##Use Case
 
 ActiveMQ is an open source, JMS 1.1 compliant, message-oriented middleware (MOM) from the Apache Software Foundation that provides high-availability, performance, scalability, reliability and security for enterprise messaging. 
