@@ -1,12 +1,12 @@
 /**
  * Copyright 2014 AppDynamics, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,19 +15,6 @@
  */
 package com.appdynamics.extensions.activemq;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import javax.management.MBeanAttributeInfo;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-
-import org.apache.log4j.Logger;
-
 import com.appdynamics.extensions.activemq.config.MBeanData;
 import com.appdynamics.extensions.activemq.config.MBeanKeyPropertyInfo;
 import com.appdynamics.extensions.activemq.config.Server;
@@ -35,6 +22,17 @@ import com.appdynamics.extensions.jmx.JMXConnectionConfig;
 import com.appdynamics.extensions.jmx.JMXConnectionUtil;
 import com.appdynamics.extensions.util.MetricUtils;
 import com.google.common.base.Strings;
+import org.apache.log4j.Logger;
+
+import javax.management.MBeanAttributeInfo;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
 
@@ -94,25 +92,31 @@ public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
 					for (MBeanAttributeInfo attr : attributes) {
 						// See we do not violate the security rules, i.e. only
 						// if the attribute is readable.
-						if (attr.isReadable()) {
-							Object attribute = jmxConnector.getMBeanAttribute(objectName, attr.getName());
-							// AppDynamics only considers number values
-							if (attribute != null && attribute instanceof Number) {
-								String metricKey = getMetricsKey(objectName, attr);
-								if (!isKeyExcluded(metricKey, excludePatterns)) {
-									if (logger.isDebugEnabled()) {
-										logger.debug("Metric key:value before ceiling = " + metricKey + ":" + String.valueOf(attribute));
-									}
-									String attribStr = MetricUtils.toWholeNumberString(attribute);
-									filteredMetrics.put(metricKey, attribStr);
-								} else {
-									if (logger.isDebugEnabled()) {
-										logger.debug(metricKey + " is excluded");
-									}
-								}
-							}
-						}
-					}
+                        if (attr.isReadable()) {
+                            String metricKey = getMetricsKey(objectName, attr);
+                            if (!isKeyExcluded(metricKey, excludePatterns)) {
+                                try {
+                                    Object attribute = jmxConnector.getMBeanAttribute(objectName, attr.getName());
+                                    // AppDynamics only considers number values
+                                    if (attribute != null && attribute instanceof Number) {
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Metric key:value before ceiling = " + metricKey + ":" + String.valueOf(attribute));
+                                        }
+                                        String attribStr = MetricUtils.toWholeNumberString(attribute);
+                                        filteredMetrics.put(metricKey, attribStr);
+                                    }
+                                } catch (Exception e) {
+                                    logger.error("Error while getting the jmx value object name = " + objectName
+                                            + " attribute " + attr.getName() + ". The error is " + e.getMessage());
+                                    logger.debug("The stacktrace is " + attr.getName(), e);
+                                }
+                            } else {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug(metricKey + " is excluded");
+                                }
+                            }
+                        }
+                    }
 				}
 			}
 		}
