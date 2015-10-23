@@ -38,8 +38,7 @@ mbean shows up.
 Note : Please make sure to not use tab (\t) while editing yaml files. You may want to validate the yaml file using a [yaml validator](http://yamllint.com/)
 
 1. Configure the ActiveMQ instances by editing the config.yml file in `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/`.
-2. Configure the MBeans in the config.yml. By default, "org.apache.activemq" is configured.
-   You can also add excludePatterns (regex) to exclude any queues, topics or metrics from showing up in the AppDynamics controller.
+2. Configure the yaml file
 
    For eg.
    ```
