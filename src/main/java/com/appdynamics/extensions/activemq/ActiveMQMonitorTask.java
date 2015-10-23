@@ -15,126 +15,144 @@
  */
 package com.appdynamics.extensions.activemq;
 
-import com.appdynamics.extensions.activemq.config.MBeanData;
 import com.appdynamics.extensions.activemq.config.MBeanKeyPropertyInfo;
-import com.appdynamics.extensions.activemq.config.Server;
-import com.appdynamics.extensions.jmx.JMXConnectionConfig;
 import com.appdynamics.extensions.jmx.JMXConnectionUtil;
-import com.appdynamics.extensions.util.MetricUtils;
+import com.appdynamics.extensions.util.metrics.Metric;
+import com.appdynamics.extensions.util.metrics.MetricFactory;
+import com.appdynamics.extensions.util.metrics.MetricOverride;
 import com.google.common.base.Strings;
+import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
+import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import org.apache.log4j.Logger;
 
 import javax.management.MBeanAttributeInfo;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
+import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SEPARATOR;
 
-	public static final String METRICS_SEPARATOR = "|";
-	private Server server;
-	private Map<String, MBeanData> mbeanLookup;
+public class ActiveMQMonitorTask implements Callable<Void> {
+
+	private String metricPrefix;
+	private String displayName;
+	private AManagedMonitor monitor;
+	private MetricOverride[] metricOverrides;
 	private JMXConnectionUtil jmxConnector;
-	public static final Logger logger = Logger.getLogger("com.singularity.extensions.ActiveMQMonitorTask");
+	public static final Logger logger = Logger.getLogger(ActiveMQMonitorTask.class);
 
-	public ActiveMQMonitorTask(Server server, MBeanData[] mbeansData) {
-		this.server = server;
-		createMBeansLookup(mbeansData);
+	public ActiveMQMonitorTask(String metricPrefix,String displayName,MetricOverride[] metricOverrides,JMXConnectionUtil jmxConnector,AManagedMonitor monitor) {
+		this.metricPrefix = metricPrefix;
+		this.displayName = displayName;
+		this.metricOverrides = metricOverrides;
+		this.jmxConnector = jmxConnector;
+		this.monitor = monitor;
 	}
 
-	private void createMBeansLookup(MBeanData[] mbeansData) {
-		mbeanLookup = new HashMap<String, MBeanData>();
-		if (mbeansData != null) {
-			for (MBeanData mBeanData : mbeansData) {
-				mbeanLookup.put(mBeanData.getDomainName(), mBeanData);
-			}
-		}
+	public Void call() throws Exception {
+		Map<String, Object> allMetrics = extractJMXMetrics();
+		// to get overridden properties for a metric.
+		MetricFactory<Object> metricFactory = new MetricFactory<Object>(metricOverrides);
+		List<Metric> decoratedMetrics = metricFactory.process(allMetrics);
+		reportMetrics(decoratedMetrics);
+		return null;
 	}
 
-	public ActiveMQMetrics call() throws Exception {
-		ActiveMQMetrics activeMQMetrics = new ActiveMQMetrics();
-		activeMQMetrics.setDisplayName(server.getDisplayName());
-		try {
-			jmxConnector = new JMXConnectionUtil(new JMXConnectionConfig(server.getHost(), server.getPort(), server.getUsername(),
-					server.getPassword()));
+
+
+
+	/**
+	 * Connects to a remote/local JMX server, applies exclusion filters and collects the metrics
+	 *
+	 * @return Void. In case of exception, the ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL is set with ActiveMQMonitorConstants.ERROR_VALUE.
+	 * @throws Exception
+	 */
+	private Map<String, Object> extractJMXMetrics() throws IOException {
+		Map<String, Object> allMetrics = new HashMap<String, Object>();
+		long startTime = System.currentTimeMillis();
+		logger.debug("Starting ActiveMQ monitor thread at " + startTime + " for server " + displayName);
+		try{
 			JMXConnector connector = jmxConnector.connect();
-			if (connector != null) {
+			if(connector != null){
 				Set<ObjectInstance> allMbeans = jmxConnector.getAllMBeans();
-				if (allMbeans != null) {
-					Map<String, String> filteredMetrics = applyExcludePatternsAndExtractMetrics(allMbeans);
-					filteredMetrics.put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.SUCCESS_VALUE);
-					activeMQMetrics.setMetrics(filteredMetrics);
+				if(allMbeans != null) {
+					mapMetrics(allMbeans, allMetrics);
+					allMetrics.put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.SUCCESS_VALUE);
 				}
 			}
-		} catch (Exception e) {
-			logger.error("Error JMX-ing into the server :: " + activeMQMetrics.getDisplayName() + " ", e);
-			activeMQMetrics.getMetrics().put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.ERROR_VALUE);
-		} finally {
+		}
+		catch(Exception e){
+			logger.error("Error JMX-ing into the server :: " + displayName, e);
+			long diffTime = System.currentTimeMillis() - startTime;
+			logger.debug("Error in ActiveMQ thread at " + diffTime);
+			allMetrics.put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.ERROR_VALUE);
+		}
+		finally{
 			jmxConnector.close();
 		}
-		return activeMQMetrics;
+		return allMetrics;
 	}
 
-	private Map<String, String> applyExcludePatternsAndExtractMetrics(Set<ObjectInstance> allMbeans) throws MalformedObjectNameException, NullPointerException {
-		Map<String, String> filteredMetrics = new HashMap<String, String>();
-		for (ObjectInstance mbean : allMbeans) {
+	private void mapMetrics(Set<ObjectInstance> allMbeans, Map<String, Object> allMetrics) {
+		for(ObjectInstance mbean : allMbeans){
 			ObjectName objectName = mbean.getObjectName();
-			if (isDomainConfigured(objectName)) {
-				MBeanData mBeanData = mbeanLookup.get(objectName.getDomain());
-				Set<String> excludePatterns = mBeanData.getExcludePatterns();
-				MBeanAttributeInfo[] attributes = jmxConnector.fetchAllAttributesForMbean(objectName);
-				if (attributes != null) {
-					for (MBeanAttributeInfo attr : attributes) {
-						// See we do not violate the security rules, i.e. only
-						// if the attribute is readable.
-                        if (attr.isReadable()) {
-                            String metricKey = getMetricsKey(objectName, attr);
-                            if (!isKeyExcluded(metricKey, excludePatterns)) {
-                                try {
-                                    Object attribute = jmxConnector.getMBeanAttribute(objectName, attr.getName());
-                                    // AppDynamics only considers number values
-                                    if (attribute != null && attribute instanceof Number) {
-                                        if (logger.isDebugEnabled()) {
-                                            logger.debug("Metric key:value before ceiling = " + metricKey + ":" + String.valueOf(attribute));
-                                        }
-                                        String attribStr = MetricUtils.toWholeNumberString(attribute);
-                                        filteredMetrics.put(metricKey, attribStr);
-                                    }
-                                } catch (Exception e) {
-                                    logger.error("Error while getting the jmx value object name = " + objectName
-                                            + " attribute " + attr.getName() + ". The error is " + e.getMessage());
-                                    logger.debug("The stacktrace is " + attr.getName(), e);
-                                }
-                            } else {
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug(metricKey + " is excluded");
-                                }
-                            }
-                        }
-                    }
+			MBeanAttributeInfo[] attributes = jmxConnector.fetchAllAttributesForMbean(objectName);
+			if (attributes != null) {
+				for (MBeanAttributeInfo attr : attributes) {
+					try {
+						// See we do not violate the security rules, i.e. only if the attribute is readable.
+						if (attr.isReadable()) {
+							Object attribute = jmxConnector.getMBeanAttribute(objectName, attr.getName());
+							//AppDynamics only considers number values
+							if (attribute != null && attribute instanceof Number) {
+								String metricKey = getMetricsKey(objectName, attr);
+								allMetrics.put(metricKey, attribute);
+							}
+						}
+					}
+					catch(Exception e){
+						logger.warn("Error fetching attribute " + attr.getName(), e);
+					}
 				}
 			}
 		}
-		return filteredMetrics;
 	}
 
-	private boolean isKeyExcluded(String metricKey, Set<String> excludePatterns) {
-		for (String excludePattern : excludePatterns) {
-			if (metricKey.matches(escapeText(excludePattern))) {
-				return true;
-			}
+	private void reportMetrics(List<Metric> decoratedMetrics) {
+		StringBuffer pathPrefixBuffer = new StringBuffer();
+		pathPrefixBuffer.append(metricPrefix);
+		if(!metricPrefix.endsWith("|")){
+			pathPrefixBuffer.append(METRICS_SEPARATOR);
 		}
-		return false;
+		pathPrefixBuffer.append(displayName).append(METRICS_SEPARATOR);
+		String pathPrefix = pathPrefixBuffer.toString();
+		for(Metric aMetric:decoratedMetrics){
+			printMetric(pathPrefix + aMetric.getMetricPath(),aMetric.getMetricValue().toString(),aMetric.getAggregator(),aMetric.getTimeRollup(),aMetric.getClusterRollup());
+		}
 	}
 
-	private String escapeText(String excludePattern) {
-		return excludePattern.replaceAll("\\|", "\\\\|");
+	private void printMetric(String metricPath,String metricValue,String aggType,String timeRollupType,String clusterRollupType) {
+		MetricWriter metricWriter = monitor.getMetricWriter(metricPath,
+				aggType,
+				timeRollupType,
+				clusterRollupType
+		);
+		//System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
+		//		+ "] metric = " + metricPath + " = " + metricValue);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
+					+ "] metric = " + metricPath + " = " + metricValue);
+		}
+		metricWriter.printMetric(metricValue);
 	}
+
+
 
 	private String getMetricsKey(ObjectName objectName, MBeanAttributeInfo attr) {
 		// Standard jmx keys. {type, brokerName, destinationType, destinationName}
@@ -166,10 +184,6 @@ public class ActiveMQMonitorTask implements Callable<ActiveMQMetrics> {
 			mbeanInfo.setDestinationName(objectName.getKeyProperty("destinationName"));
 		}
 		return mbeanInfo;
-	}
-
-	private boolean isDomainConfigured(ObjectName objectName) {
-		return (mbeanLookup.get(objectName.getDomain()) != null);
 	}
 
 }

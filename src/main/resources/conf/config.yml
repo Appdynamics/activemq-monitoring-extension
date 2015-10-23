@@ -5,13 +5,13 @@ servers:
     username: ""
     password: ""
     displayName: "localhost"
+#    metricOverrides:
+#        - metricKey: ".*"
+#          disabled: true
 
-# ActiveMQ mbeans. Exclude patterns with regex can be used to exclude any unwanted metrics, queues, topics.
-mbeans:
-  - domainName: "org.apache.activemq"
-    excludePatterns: [
-      
-    ]
+
+
+
 
 # number of concurrent tasks
 numberOfThreads: 10

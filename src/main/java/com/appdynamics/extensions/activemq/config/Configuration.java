@@ -15,13 +15,15 @@
  */
 package com.appdynamics.extensions.activemq.config;
 
+import com.appdynamics.extensions.util.metrics.MetricOverride;
+
 public class Configuration {
 
 	private Server[] servers;
-	private MBeanData[] mbeans;
 	private int threadTimeout;
     private int numberOfThreads;
 	private String metricPrefix;
+	private MetricOverride[] metricOverrides;
 
 	public Server[] getServers() {
 		return servers;
@@ -31,14 +33,6 @@ public class Configuration {
 		this.servers = servers;
 	}
 
-	public MBeanData[] getMbeans() {
-		return mbeans;
-	}
-	
-	public void setMbeans(MBeanData[] mbeans) {
-		this.mbeans = mbeans;
-	}
-	
 	public int getThreadTimeout() {
 		return threadTimeout;
 	}
@@ -63,4 +57,11 @@ public class Configuration {
 		this.metricPrefix = metricPrefix;
 	}
 
+	public MetricOverride[] getMetricOverrides() {
+		return metricOverrides;
+	}
+
+	public void setMetricOverrides(MetricOverride[] metricOverrides) {
+		this.metricOverrides = metricOverrides;
+	}
 }

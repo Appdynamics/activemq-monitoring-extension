@@ -1,0 +1,27 @@
+# List of cassandra servers
+servers:
+  - host: "localhost"
+    port: 1616
+    username: ""
+    password: ""
+    displayName: "myUbuntu"
+#    metricOverrides:
+#      - metricKey: ".*"
+#        disabled: false
+#
+#      - metricKey: "Platform|java.lang|OperatingSystem|ProcessCpuTime"
+#        disabled: false
+#        postfix: "inSec"
+#        multiplier: 0.000001
+#        prefix: "helloWorld"
+
+
+# number of concurrent tasks
+numberOfThreads: 10
+
+#timeout for the thread in seconds
+threadTimeout: 30
+
+#prefix used to show up metrics in AppDynamics
+metricPrefix:  "Custom Metrics|ActiveMQ|"
+

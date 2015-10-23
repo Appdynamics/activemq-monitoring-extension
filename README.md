@@ -11,10 +11,27 @@ The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging se
 
 JMX must be enabled in ActiveMQ Messaging server for this extension to gather metrics. To enable, please see [these instructions](http://activemq.apache.org/jmx.html).
 
+## Troubleshooting steps ##
+Before configuring the extension, please make sure to run the below steps to check if the set up is correct.
+
+1. Telnet into your activemq server from the box where the extension is deployed.
+       telnet <hostname> <port>
+
+       <port> - It is the jmxremote.port specified.
+        <hostname> - IP address
+
+    If telnet works, it confirm the access to the activemq server.
+
+
+2. Start jconsole. Jconsole comes as a utitlity with installed jdk. After giving the correct host and port , check if activemq
+mbean shows up.
+
+
 ##Installation
 
 1. Run 'mvn clean install' from the activemq-monitoring-extension directory and find the ActiveMQMonitor.zip in the "target" folder.
 2. Unzip as "ActiveMQMonitor" and copy the "ActiveMQMonitor" directory to `<MACHINE_AGENT_HOME>/monitors`
+
 
 ## Configuration ##
 
@@ -28,34 +45,65 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
    ```
         # List of ActiveMQ servers
         servers:
-          - host: "localhost"
-            port: 1099
-            username: "admin"
-            password: "admin"
-            displayName: "localhost"
+                 - host: "192.168.57.102"
+                   port: 1616
+                   username: ""
+                   password: ""
+                   displayName: "localhost"
+                   metricOverrides:
+                     - metricKey: ".*"
+                       disabled: true
+
+                     - metricKey: ".*Time"
+                       disabled: false
+                       postfix: "inSec"
+                       multiplier: 0.000001
 
 
-        # ActiveMQ mbeans. Exclude patterns with regex can be used to exclude any unwanted queues, topics or metrics.
-        mbeans:
-          - domainName: "org.apache.activemq"
-            excludePatterns: [
-              localhost|Broker|.*,
-              .*TEST.FOO.*,
-              .*AverageEnqueueTime$
-              ]
 
-        # number of concurrent tasks
-        numberOfThreads: 10
+               # number of concurrent tasks
+               numberOfThreads: 10
 
-        #timeout for the thread
-        threadTimeout: 30
+               #timeout for the thread
+               threadTimeout: 30
 
-        #prefix used to show up metrics in AppDynamics
-        metricPrefix:  "Custom Metrics|ActiveMQ|"
+               #prefix used to show up metrics in AppDynamics
+               metricPrefix:  "Custom Metrics|ActiveMQ|"
+
+               metricOverrides:
+                    - metricKey: ".*"
+                      disabled: true
+
+                    - metricKey: ".*Time"
+                      disabled: false
+                      postfix: "inSec"
+                      multiplier: 0.000001
 
    ```
 
-3. Configure the path to the config.yml file by editing the <task-arguments> in the monitor.xml file in the `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/` directory. Below is the sample
+3. MetricOverrides can be given at each server level or at the global level. MetricOverrides given at the global level will
+   take precedence over server level.
+
+   The following transformations can be done using the MetricOverrides
+
+   a. metricKey: The identifier to identify a metric or group of metrics. Metric Key supports regex.
+   b. metricPrefix: Text to be prepended before the raw metricPath. It gets appended after the displayName.
+         Eg. Custom Metrics|activemq|<displayNameForServer>|<metricPrefix>|<metricName>|<metricPostfix>
+
+   c. metricPostfix: Text to be appended to the raw metricPath.
+         Eg. Custom Metrics|activemq|<displayNameForServer>|<metricPrefix>|<metricName>|<metricPostfix>
+
+   d. multiplier: An integer or decimal to transform the metric value.
+
+   e. timeRollup, clusterRollup, aggregator: These are AppDynamics specific fields. More info about them can be found
+        https://docs.appdynamics.com/display/PRO41/Build+a+Monitoring+Extension+Using+Java
+
+   f. disabled: This boolean value can be used to turn off reporting of metrics.
+
+   #Please note that if more than one regex specified in metricKey satisfies a given metric, the metricOverride specified later will win.
+
+
+4. Configure the path to the config.yml file by editing the <task-arguments> in the monitor.xml file in the `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/` directory. Below is the sample
 
      ```
      <task-arguments>
