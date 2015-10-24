@@ -57,34 +57,6 @@ public class ActiveMQMonitor extends AManagedMonitor {
 	 */
 	public TaskOutput execute(Map<String, String> taskArgs, TaskExecutionContext arg1) throws TaskExecutionException {
 		logVersion();
-		/*if (taskArguments != null) {
-			logger.info("Starting ActiveMQ Monitoring Task");
-			if (logger.isDebugEnabled()) {
-				logger.debug("Task Arguments Passed ::" + taskArguments);
-			}
-			String configFilename = getConfigFilename(taskArguments.get(CONFIG_ARG));
-			try {
-				// read config file
-				Configuration config = configUtil.readConfig(configFilename, Configuration.class);
-				threadPool = Executors.newFixedThreadPool(config.getNumberOfThreads() == 0 ? DEFAULT_NUMBER_OF_THREADS : config.getNumberOfThreads());
-				List<Future<ActiveMQMetrics>> parallelTasks = createConcurrentTasks(config);
-				List<ActiveMQMetrics> aMetrics = collectMetrics(parallelTasks,
-						config.getThreadTimeout() == 0 ? DEFAULT_THREAD_TIMEOUT : config.getThreadTimeout());
-				printStats(config, aMetrics);
-				logger.info("ActiveMQ Monitoring Task completed successfully");
-				return new TaskOutput("ActiveMQ Monitoring Task completed successfully");
-			} catch (FileNotFoundException e) {
-				logger.error("Config file not found :: " + configFilename + " ", e);
-			} catch (Exception e) {
-				logger.error("Metrics collection failed ", e);
-			} finally {
-				if (!threadPool.isShutdown()) {
-					threadPool.shutdown();
-				}
-			}
-		}
-		throw new TaskExecutionException("ActiveMQ monitoring task completed with failures.");*/
-
 		if (taskArgs != null) {
 			logger.info("Starting the ActiveMQ Monitoring task.");
 			if (logger.isDebugEnabled()) {
@@ -109,7 +81,7 @@ public class ActiveMQMonitor extends AManagedMonitor {
 			}
 
 		}
-		throw new TaskExecutionException("Coherence monitoring task completed with failures.");
+		throw new TaskExecutionException("ActiveMQ monitoring task completed with failures.");
 	}
 
 
