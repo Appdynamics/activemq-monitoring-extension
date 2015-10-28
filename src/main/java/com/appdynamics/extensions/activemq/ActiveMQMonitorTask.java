@@ -20,6 +20,7 @@ import com.appdynamics.extensions.jmx.JMXConnectionUtil;
 import com.appdynamics.extensions.util.metrics.Metric;
 import com.appdynamics.extensions.util.metrics.MetricFactory;
 import com.appdynamics.extensions.util.metrics.MetricOverride;
+import com.appdynamics.extensions.util.metrics.MetricProperties;
 import com.google.common.base.Strings;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -57,6 +58,7 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 
 	public Void call() throws Exception {
 		Map<String, Object> allMetrics = extractJMXMetrics();
+		logger.debug("Total number of metrics bering reported by server " + displayName + " " + allMetrics.size());
 		// to get overridden properties for a metric.
 		MetricFactory<Object> metricFactory = new MetricFactory<Object>(metricOverrides);
 		List<Metric> decoratedMetrics = metricFactory.process(allMetrics);
@@ -73,7 +75,7 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 	 * @return Void. In case of exception, the ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL is set with ActiveMQMonitorConstants.ERROR_VALUE.
 	 * @throws Exception
 	 */
-	private Map<String, Object> extractJMXMetrics() throws IOException {
+	private Map<String, Object> extractJMXMetrics() throws Exception {
 		Map<String, Object> allMetrics = new HashMap<String, Object>();
 		long startTime = System.currentTimeMillis();
 		logger.debug("Starting ActiveMQ monitor thread at " + startTime + " for server " + displayName);
@@ -92,6 +94,7 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 			long diffTime = System.currentTimeMillis() - startTime;
 			logger.debug("Error in ActiveMQ thread at " + diffTime);
 			allMetrics.put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.ERROR_VALUE);
+			throw e;
 		}
 		finally{
 			jmxConnector.close();
@@ -117,7 +120,7 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 						}
 					}
 					catch(Exception e){
-						logger.warn("Error fetching attribute " + attr.getName(), e);
+						logger.debug("Error fetching attribute " + attr.getName(), e);
 					}
 				}
 			}
@@ -143,8 +146,8 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 				timeRollupType,
 				clusterRollupType
 		);
-		//System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
-		//		+ "] metric = " + metricPath + " = " + metricValue);
+		System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
+				+ "] metric = " + metricPath + " = " + metricValue);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
 					+ "] metric = " + metricPath + " = " + metricValue);
