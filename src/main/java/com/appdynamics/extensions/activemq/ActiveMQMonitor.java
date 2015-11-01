@@ -24,6 +24,7 @@ import com.appdynamics.extensions.jmx.JMXConnectionUtil;
 import com.appdynamics.extensions.util.metrics.MetricOverride;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.TaskExecutionContext;
 import com.singularity.ee.agent.systemagent.api.TaskOutput;
@@ -31,19 +32,19 @@ import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class ActiveMQMonitor extends AManagedMonitor {
 
 	private static final Logger logger = Logger.getLogger(ActiveMQMonitor.class);
 	public static final String CONFIG_ARG = "config-file";
 	private static final int DEFAULT_NUMBER_OF_THREADS = 10;
-	public static final int DEFAULT_THREAD_TIMEOUT = 10;
 
 	private ExecutorService threadPool;
+	private boolean initialized;
 
 	public ActiveMQMonitor() {
 		System.out.println(logVersion());
@@ -68,7 +69,10 @@ public class ActiveMQMonitor extends AManagedMonitor {
 				//read the config.
 				File configFile = PathResolver.getFile(taskArgs.get(CONFIG_ARG), AManagedMonitor.class);
 				Configuration config = YmlReader.readFromFile(configFile, Configuration.class);
-				threadPool = Executors.newFixedThreadPool(config.getNumberOfThreads() == 0 ? DEFAULT_NUMBER_OF_THREADS : config.getNumberOfThreads());
+				if(!initialized) {
+					threadPool = createThreadPool(config);
+					initialized = true;
+				}
 				//parallel execution for each server.
 				runConcurrentTasks(config);
 				logger.info("ActiveMQ monitoring task completed successfully.");
@@ -76,14 +80,17 @@ public class ActiveMQMonitor extends AManagedMonitor {
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error("Metrics collection failed", e);
-			} finally {
-				if(!threadPool.isShutdown()){
-					threadPool.shutdown();
-				}
 			}
-
 		}
 		throw new TaskExecutionException("ActiveMQ monitoring task completed with failures.");
+	}
+
+	private ExecutorService createThreadPool(Configuration config) {
+		final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+				.setNameFormat("ActiveMq-Task-Thread-%d")
+				.build();
+		return Executors.newFixedThreadPool(config.getNumberOfThreads() == 0 ? DEFAULT_NUMBER_OF_THREADS : config.getNumberOfThreads(),
+				threadFactory);
 	}
 
 
@@ -94,27 +101,13 @@ public class ActiveMQMonitor extends AManagedMonitor {
 	 * @return Handles to concurrent tasks.
 	 */
 	private void runConcurrentTasks(Configuration config) {
-		List<Future<Void>> parallelTasks = new ArrayList<Future<Void>>();
 		if (config != null && config.getServers() != null) {
 			for (Server server : config.getServers()) {
 				MetricOverride[] metricOverrides = (server.getMetricOverrides() != null) ? server.getMetricOverrides() : config.getMetricOverrides();
 				JMXConnectionUtil jmxConnector = createJMXConnector(server);
 				//passing the context to the task.
 				ActiveMQMonitorTask activeMQTask = new ActiveMQMonitorTask(config.getMetricPrefix(),server.getDisplayName(),metricOverrides,jmxConnector,this);
-				parallelTasks.add(threadPool.submit(activeMQTask));
-			}
-		}
-		for (Future<Void> aTask : parallelTasks) {
-			try {
-				aTask.get(config.getThreadTimeout(), TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				logger.error("Task interrupted.", e);
-			} catch (ExecutionException e) {
-				logger.error("Task execution failed.", e);
-			} catch (TimeoutException e) {
-				logger.error("Task timed out.",e);
-			} catch (Exception e){
-				logger.error("Unknown exception in thread", e);
+				threadPool.execute(activeMQTask);
 			}
 		}
 	}

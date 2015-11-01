@@ -20,7 +20,6 @@ import com.appdynamics.extensions.jmx.JMXConnectionUtil;
 import com.appdynamics.extensions.util.metrics.Metric;
 import com.appdynamics.extensions.util.metrics.MetricFactory;
 import com.appdynamics.extensions.util.metrics.MetricOverride;
-import com.appdynamics.extensions.util.metrics.MetricProperties;
 import com.google.common.base.Strings;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -30,16 +29,14 @@ import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SEPARATOR;
 
-public class ActiveMQMonitorTask implements Callable<Void> {
+public class ActiveMQMonitorTask implements Runnable {
 
 	private String metricPrefix;
 	private String displayName;
@@ -56,23 +53,26 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 		this.monitor = monitor;
 	}
 
-	public Void call() throws Exception {
-		Map<String, Object> allMetrics = extractJMXMetrics();
-		logger.debug("Total number of metrics extracted from server " + displayName + " " + allMetrics.size());
-		// to get overridden properties for a metric.
-		MetricFactory<Object> metricFactory = new MetricFactory<Object>(metricOverrides);
-		List<Metric> decoratedMetrics = metricFactory.process(allMetrics);
-		reportMetrics(decoratedMetrics);
-		return null;
+	public void run() {
+		Map<String, Object> allMetrics = null;
+		try {
+			allMetrics = extractJMXMetrics();
+			logger.debug("Total number of metrics extracted from server " + displayName + " " + allMetrics.size());
+			// to get overridden properties for a metric.
+			MetricFactory<Object> metricFactory = new MetricFactory<Object>(metricOverrides);
+			List<Metric> decoratedMetrics = metricFactory.process(allMetrics);
+			logger.debug("Total metrics reporting from server " + displayName + " " + decoratedMetrics.size());
+			reportMetrics(decoratedMetrics);
+		}
+		catch (Exception e) {
+			logger.error("Error in run of " + Thread.currentThread().getName(),e);
+		}
 	}
-
-
-
 
 	/**
 	 * Connects to a remote/local JMX server, applies exclusion filters and collects the metrics
 	 *
-	 * @return Void. In case of exception, the ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL is set with ActiveMQMonitorConstants.ERROR_VALUE.
+	 * @return In case of exception, the ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL is set with ActiveMQMonitorConstants.ERROR_VALUE.
 	 * @throws Exception
 	 */
 	private Map<String, Object> extractJMXMetrics() throws Exception {
@@ -188,5 +188,6 @@ public class ActiveMQMonitorTask implements Callable<Void> {
 		}
 		return mbeanInfo;
 	}
+
 
 }

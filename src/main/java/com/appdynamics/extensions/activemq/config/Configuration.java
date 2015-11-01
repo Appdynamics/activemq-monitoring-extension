@@ -20,7 +20,6 @@ import com.appdynamics.extensions.util.metrics.MetricOverride;
 public class Configuration {
 
 	private Server[] servers;
-	private int threadTimeout;
     private int numberOfThreads;
 	private String metricPrefix;
 	private MetricOverride[] metricOverrides;
@@ -31,14 +30,6 @@ public class Configuration {
 
 	public void setServers(Server[] servers) {
 		this.servers = servers;
-	}
-
-	public int getThreadTimeout() {
-		return threadTimeout;
-	}
-
-	public void setThreadTimeout(int threadTimeout) {
-		this.threadTimeout = threadTimeout;
 	}
 
 	public int getNumberOfThreads() {

@@ -19,18 +19,13 @@ servers:
 # number of concurrent tasks
 numberOfThreads: 10
 
-#timeout for the thread in seconds
-threadTimeout: 30
-
 #prefix used to show up metrics in AppDynamics
 metricPrefix:  "Custom Metrics|ActiveMQ|"
 
 metricOverrides:
   - metricKey: ".*"
-    disabled: true
-
-  - metricKey: ".*CMG.*OUT.*QueueSize.*"
     disabled: false
+
 
 
 
