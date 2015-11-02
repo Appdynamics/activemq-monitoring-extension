@@ -63,9 +63,6 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
                # number of concurrent tasks
                numberOfThreads: 10
 
-               #timeout for the thread
-               threadTimeout: 30
-
                #prefix used to show up metrics in AppDynamics
                metricPrefix:  "Custom Metrics|ActiveMQ|"
 
@@ -87,11 +84,15 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
 
    a. metricKey: The identifier to identify a metric or group of metrics. Metric Key supports regex.
    b. metricPrefix: Text to be prepended before the raw metricPath. It gets appended after the displayName.
+     ~~~
          Eg. Custom Metrics|activemq|<displayNameForServer>|<metricPrefix>|<metricName>|<metricPostfix>
+     ~~~
 
    c. metricPostfix: Text to be appended to the raw metricPath.
+     ~~~
          Eg. Custom Metrics|activemq|<displayNameForServer>|<metricPrefix>|<metricName>|<metricPostfix>
-
+     ~~~
+     
    d. multiplier: An integer or decimal to transform the metric value.
 
    e. timeRollup, clusterRollup, aggregator: These are AppDynamics specific fields. More info about them can be found
