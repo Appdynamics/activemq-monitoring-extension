@@ -55,7 +55,9 @@ public class ActiveMQMonitorTask implements Runnable {
 
 	public void run() {
 		Map<String, Object> allMetrics = null;
+		long startTime = System.currentTimeMillis();
 		try {
+			logger.debug("ActiveMQ monitor thread for server " + displayName + " started.");
 			allMetrics = extractJMXMetrics();
 			logger.debug("Total number of metrics extracted from server " + displayName + " " + allMetrics.size());
 			// to get overridden properties for a metric.
@@ -67,6 +69,11 @@ public class ActiveMQMonitorTask implements Runnable {
 		catch (Exception e) {
 			logger.error("Error in run of " + Thread.currentThread().getName(),e);
 		}
+		finally{
+			long endTime = System.currentTimeMillis() - startTime;
+			logger.debug("ActiveMQ monitor thread for server " + displayName + " ended. Time taken = " + endTime);
+
+		}
 	}
 
 	/**
@@ -77,8 +84,6 @@ public class ActiveMQMonitorTask implements Runnable {
 	 */
 	private Map<String, Object> extractJMXMetrics() throws Exception {
 		Map<String, Object> allMetrics = new HashMap<String, Object>();
-		long startTime = System.currentTimeMillis();
-		logger.debug("Starting ActiveMQ monitor thread at " + startTime + " for server " + displayName);
 		try{
 			JMXConnector connector = jmxConnector.connect();
 			if(connector != null){
@@ -91,8 +96,6 @@ public class ActiveMQMonitorTask implements Runnable {
 		}
 		catch(Exception e){
 			logger.error("Error JMX-ing into the server :: " + displayName, e);
-			long diffTime = System.currentTimeMillis() - startTime;
-			logger.debug("Error in ActiveMQ thread at " + diffTime);
 			allMetrics.put(ActiveMQMonitorConstants.METRICS_COLLECTION_SUCCESSFUL, ActiveMQMonitorConstants.ERROR_VALUE);
 			throw e;
 		}
@@ -146,8 +149,8 @@ public class ActiveMQMonitorTask implements Runnable {
 				timeRollupType,
 				clusterRollupType
 		);
-		System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
-				+ "] metric = " + metricPath + " = " + metricValue);
+		//System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
+		//		+ "] metric = " + metricPath + " = " + metricValue);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
 					+ "] metric = " + metricPath + " = " + metricValue);
