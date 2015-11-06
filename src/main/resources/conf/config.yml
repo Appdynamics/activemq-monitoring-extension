@@ -1,3 +1,11 @@
+### ANY CHANGES TO THIS FILE DOES NOT REQUIRE A RESTART ###
+
+#This will create this metric in all the tiers, under this path
+metricPrefix: Custom Metrics|ActiveMQ
+
+#This will create it in specific Tier. Replace <TIER_NAME>
+#metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|ActiveMQ
+
 # List of ActiveMQ Servers
 servers:
   - host: "localhost"
@@ -5,16 +13,62 @@ servers:
     username: ""
     password: ""
     displayName: "localhost"
-#    metricOverrides:
-#        - metricKey: ".*"
-#          disabled: true
 
 
-
-
-
-# number of concurrent tasks
+# number of concurrent tasks.
+# This doesn't need to be changed unless many servers are configured
 numberOfThreads: 10
 
-#prefix used to show up metrics in AppDynamics
-metricPrefix:  "Custom Metrics|ActiveMQ|"
+
+# The configuration of different metrics from various mbeans of activemq server
+# Does not need to be changed.
+#
+mbeans:
+  - objectName: "org.apache.activemq:type=Broker,brokerName=*"
+    metrics:
+      include:
+        - StorePercentUsage: "StorePercentUsage"
+        - TempPercentUsage: "TempPercentUsage"
+        - MemoryPercentUsage: "MemoryPercentUsage"
+        - TotalConnectionsCount: "TotalConnectionsCount"
+        - TotalConsumerCount: "TotalConsumerCount"
+        - TotalDequeueCount: "TotalDequeueCount"
+        - TotalEnqueueCount: "TotalEnqueueCount"
+        - TotalMessageCount: "TotalMessageCount"
+        - TotalProducerCount: "TotalProducerCount"
+
+  - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Queue,destinationName=*"
+    metrics:
+      include:
+        - AverageEnqueueTime: "AverageEnqueueTime"
+        - ConsumerCount: "ConsumerCount"
+        - ProducerCount: "ProducerCount"
+        - MaxEnqueueTime: "MaxEnqueueTime"
+        - MinEnqueueTime: "MinEnqueueTime"
+        - MemoryPercentUsage: "MemoryPercentUsage"
+        - QueueSize: "QueueSize"
+        - DequeueCount: "DequeueCount"
+        - DispatchCount: "DispatchCount"
+        - EnqueueCount: "EnqueueCount"
+        - ExpiredCount: "ExpiredCount"
+        - InFlightCount: "InFlightCount"
+        - AverageMessageSize: "AverageMessageSize"
+
+  - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
+    metrics:
+      include:
+        - AverageEnqueueTime: "AverageEnqueueTime"
+        - ConsumerCount: "ConsumerCount"
+        - ProducerCount: "ProducerCount"
+        - MaxEnqueueTime: "MaxEnqueueTime"
+        - MinEnqueueTime: "MinEnqueueTime"
+        - MemoryPercentUsage: "MemoryPercentUsage"
+        - QueueSize: "QueueSize"
+        - DequeueCount: "DequeueCount"
+        - DispatchCount: "DispatchCount"
+        - EnqueueCount: "EnqueueCount"
+        - ExpiredCount: "ExpiredCount"
+        - InFlightCount: "InFlightCount"
+        - AverageMessageSize: "AverageMessageSize"
+
+

@@ -9,7 +9,7 @@ metricPrefix: Custom Metrics|ActiveMQ
 # List of ActiveMQ Servers
 servers:
   - host: "localhost"
-    port: 1099
+    port: 1616
     username: ""
     password: ""
     encryptedPassword: ""
@@ -29,9 +29,9 @@ mbeans:
     metrics:
       include:
         - StorePercentUsage: "StorePercentUsage"
-          metricType: "AVERAGE AVERAGE INDIVIDUAL"
+          metricType: "SUM AVERAGE COLLECTIVE"
           multiplier: 1
-        - TempPercentUsage: "TempPercentUsage"
+        - TempPercentUsage: "TempPercentUsageThisIsTest"
         - MemoryPercentUsage: "MemoryPercentUsage"
         - TotalConnectionsCount: "TotalConnectionsCount"
         - TotalConsumerCount: "TotalConsumerCount"
@@ -59,19 +59,6 @@ mbeans:
 
   - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
     metrics:
-      include:
-        - AverageEnqueueTime: "AverageEnqueueTime"
-        - ConsumerCount: "ConsumerCount"
-        - ProducerCount: "ProducerCount"
-        - MaxEnqueueTime: "MaxEnqueueTime"
-        - MinEnqueueTime: "MinEnqueueTime"
-        - MemoryPercentUsage: "MemoryPercentUsage"
-        - QueueSize: "QueueSize"
-        - DequeueCount: "DequeueCount"
-        - DispatchCount: "DispatchCount"
-        - EnqueueCount: "EnqueueCount"
-        - ExpiredCount: "ExpiredCount"
-        - InFlightCount: "InFlightCount"
-        - AverageMessageSize: "AverageMessageSize"
+      exclude: ["DispatchCount","AverageMessageSize"]
 
 

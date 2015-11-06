@@ -15,8 +15,6 @@
  */
 package com.appdynamics.extensions.activemq.config;
 
-import com.appdynamics.extensions.util.metrics.MetricOverride;
-
 public class Server {
 	
 	private String host;
@@ -24,51 +22,62 @@ public class Server {
 	private String serviceUrl;
     private String username;
     private String password;
+	private String encryptedPassword;
     private String displayName;
-	private MetricOverride[] metricOverrides;
-    
+
 	public String getHost() {
 		return host;
 	}
+
 	public void setHost(String host) {
 		this.host = host;
 	}
+
 	public int getPort() {
 		return port;
 	}
+
 	public void setPort(int port) {
 		this.port = port;
 	}
+
 	public String getUsername() {
 		return username;
 	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
+
 	public String getPassword() {
 		return password;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
 	public String getDisplayName() {
 		return displayName;
 	}
+
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
+
 	public String getServiceUrl() {
 		return serviceUrl;
 	}
+
 	public void setServiceUrl(String serviceUrl) {
 		this.serviceUrl = serviceUrl;
 	}
 
-	public MetricOverride[] getMetricOverrides() {
-		return metricOverrides;
+	public String getEncryptedPassword() {
+		return encryptedPassword;
 	}
 
-	public void setMetricOverrides(MetricOverride[] metricOverrides) {
-		this.metricOverrides = metricOverrides;
+	public void setEncryptedPassword(String encryptedPassword) {
+		this.encryptedPassword = encryptedPassword;
 	}
 }

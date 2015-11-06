@@ -15,20 +15,30 @@
  */
 package com.appdynamics.extensions.activemq.config;
 
-import com.appdynamics.extensions.util.metrics.MetricOverride;
+import com.google.common.collect.Lists;
+
+import java.util.List;
+
+import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SEPARATOR;
 
 public class Configuration {
 
-	private Server[] servers;
-    private int numberOfThreads;
-	private String metricPrefix;
-	private MetricOverride[] metricOverrides;
+	private static final int DEFAULT_NUMBER_OF_THREADS = 10;
 
-	public Server[] getServers() {
+	private String metricPrefix;
+	private List<Server> servers;
+    private int numberOfThreads = DEFAULT_NUMBER_OF_THREADS;
+	private String encryptionKey;
+	private List<MBean> mbeans;
+
+	public List<Server> getServers() {
+		if(servers == null){
+			servers = Lists.newArrayList();
+		}
 		return servers;
 	}
 
-	public void setServers(Server[] servers) {
+	public void setServers(List<Server> servers) {
 		this.servers = servers;
 	}
 
@@ -45,14 +55,28 @@ public class Configuration {
 	}
 
 	public void setMetricPrefix(String metricPrefix) {
+		if(!metricPrefix.endsWith(METRICS_SEPARATOR)){
+			metricPrefix = metricPrefix + METRICS_SEPARATOR;
+		}
 		this.metricPrefix = metricPrefix;
 	}
 
-	public MetricOverride[] getMetricOverrides() {
-		return metricOverrides;
+	public String getEncryptionKey() {
+		return encryptionKey;
 	}
 
-	public void setMetricOverrides(MetricOverride[] metricOverrides) {
-		this.metricOverrides = metricOverrides;
+	public void setEncryptionKey(String encryptionKey) {
+		this.encryptionKey = encryptionKey;
+	}
+
+	public List<MBean> getMbeans() {
+		if(mbeans == null){
+			mbeans = Lists.newArrayList();
+		}
+		return mbeans;
+	}
+
+	public void setMbeans(List<MBean> mbeans) {
+		this.mbeans = mbeans;
 	}
 }

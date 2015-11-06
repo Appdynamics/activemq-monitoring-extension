@@ -4,7 +4,7 @@
 
   <groupId>com.appdynamics.extensions</groupId>
   <artifactId>activemq-monitoring-extension</artifactId>
-  <version>3.0.0</version>
+  <version>4.0.1</version>
   <packaging>jar</packaging>
 
   <name>activemq-monitoring-extension</name>
@@ -44,6 +44,12 @@
           <artifactId>junit</artifactId>
           <version>4.11</version>
           <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.4</version>
+          <scope>provided</scope>
       </dependency>
   </dependencies>
   

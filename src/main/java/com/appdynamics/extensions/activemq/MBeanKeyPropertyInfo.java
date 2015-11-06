@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.appdynamics.extensions.activemq.config;
+package com.appdynamics.extensions.activemq;
 
 public class MBeanKeyPropertyInfo {
 	

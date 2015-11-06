@@ -42,65 +42,79 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
 
    For eg.
    ```
-        # List of ActiveMQ servers
+        #This will create this metric in all the tiers, under this path
+        metricPrefix: Custom Metrics|ActiveMQ
+
+        #This will create it in specific Tier. Replace <TIER_NAME>
+        #metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|ActiveMQ
+
+        # List of ActiveMQ Servers
         servers:
-                 - host: "192.168.57.102"
-                   port: 1616
-                   username: ""
-                   password: ""
-                   displayName: "localhost"
-                   metricOverrides:
-                     - metricKey: ".*"
-                       disabled: true
-
-                     - metricKey: ".*Time"
-                       disabled: false
-                       postfix: "inSec"
-                       multiplier: 0.000001
+          - host: "localhost"
+            port: 1099
+            username: ""
+            password: ""
+            displayName: "localhost"
 
 
+        # number of concurrent tasks.
+        # This doesn't need to be changed unless many servers are configured
+        numberOfThreads: 10
 
-               # number of concurrent tasks
-               numberOfThreads: 10
 
-               #prefix used to show up metrics in AppDynamics
-               metricPrefix:  "Custom Metrics|ActiveMQ|"
+        # The configuration of different metrics from various mbeans of activemq server
+        # Does not need to be changed.
+        #
+        mbeans:
+          - objectName: "org.apache.activemq:type=Broker,brokerName=*"
+            metrics:
+              include:
+                - StorePercentUsage: "StorePercentUsage"
+                - TempPercentUsage: "TempPercentUsage"
+                - MemoryPercentUsage: "MemoryPercentUsage"
+                - TotalConnectionsCount: "TotalConnectionsCount"
+                - TotalConsumerCount: "TotalConsumerCount"
+                - TotalDequeueCount: "TotalDequeueCount"
+                - TotalEnqueueCount: "TotalEnqueueCount"
+                - TotalMessageCount: "TotalMessageCount"
+                - TotalProducerCount: "TotalProducerCount"
 
-               metricOverrides:
-                    - metricKey: ".*"
-                      disabled: true
+          - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Queue,destinationName=*"
+            metrics:
+              include:
+                - AverageEnqueueTime: "AverageEnqueueTime"
+                - ConsumerCount: "ConsumerCount"
+                - ProducerCount: "ProducerCount"
+                - MaxEnqueueTime: "MaxEnqueueTime"
+                - MinEnqueueTime: "MinEnqueueTime"
+                - MemoryPercentUsage: "MemoryPercentUsage"
+                - QueueSize: "QueueSize"
+                - DequeueCount: "DequeueCount"
+                - DispatchCount: "DispatchCount"
+                - EnqueueCount: "EnqueueCount"
+                - ExpiredCount: "ExpiredCount"
+                - InFlightCount: "InFlightCount"
+                - AverageMessageSize: "AverageMessageSize"
 
-                    - metricKey: ".*Time"
-                      disabled: false
-                      postfix: "inSec"
-                      multiplier: 0.000001
+          - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
+            metrics:
+              include:
+                - AverageEnqueueTime: "AverageEnqueueTime"
+                - ConsumerCount: "ConsumerCount"
+                - ProducerCount: "ProducerCount"
+                - MaxEnqueueTime: "MaxEnqueueTime"
+                - MinEnqueueTime: "MinEnqueueTime"
+                - MemoryPercentUsage: "MemoryPercentUsage"
+                - QueueSize: "QueueSize"
+                - DequeueCount: "DequeueCount"
+                - DispatchCount: "DispatchCount"
+                - EnqueueCount: "EnqueueCount"
+                - ExpiredCount: "ExpiredCount"
+                - InFlightCount: "InFlightCount"
+                - AverageMessageSize: "AverageMessageSize"
 
    ```
 
-3. MetricOverrides can be given at each server level or at the global level. MetricOverrides given at the global level will
-   take precedence over server level.
-
-   The following transformations can be done using the MetricOverrides
-
-   a. metricKey: The identifier to identify a metric or group of metrics. Metric Key supports regex.
-   b. metricPrefix: Text to be prepended before the raw metricPath. It gets appended after the displayName.
-     ~~~
-         Eg. Custom Metrics|activemq|<displayNameForServer>|<metricPrefix>|<metricName>|<metricPostfix>
-     ~~~
-
-   c. metricPostfix: Text to be appended to the raw metricPath.
-     ~~~
-         Eg. Custom Metrics|activemq|<displayNameForServer>|<metricPrefix>|<metricName>|<metricPostfix>
-     ~~~
-     
-   d. multiplier: An integer or decimal to transform the metric value.
-
-   e. timeRollup, clusterRollup, aggregator: These are AppDynamics specific fields. More info about them can be found
-        https://docs.appdynamics.com/display/PRO41/Build+a+Monitoring+Extension+Using+Java
-
-   f. disabled: This boolean value can be used to turn off reporting of metrics.
-
-   #Please note that if more than one regex specified in metricKey satisfies a given metric, the metricOverride specified later will win.
 
 
 4. Configure the path to the config.yml file by editing the <task-arguments> in the monitor.xml file in the `<MACHINE_AGENT_HOME>/monitors/ActiveMQMonitor/` directory. Below is the sample
@@ -116,8 +130,6 @@ Note : Please make sure to not use tab (\t) while editing yaml files. You may wa
 ## Metrics
 
 The following are the metrics reported to the controller
-* MemoryLimit, MemoryPercentUsage, StoreLimit, StorePercentUsage, TempLimit, TempPercentUsage, TotalConsumerCount, TotalDequeCount, TotalEnqueueCount, TotalMessageCount, TotalProducerCount
-* Queue/Topic Metrics: AverageEnqueueTime, BlockedProducerWarningInterval, ConsumerCount, CursorMemoryUsage, CursorPercentUsage, DequeueCount, DispatchCount, EnqueueCount, ExpiredCount, InflightCount, MaxAuditDepth, MaxEnqueueTime, MaxPageSize, MaxProducersToAudit, MemoryLimit, MemoryPercentUsage, MemoryUsagePortion, MinEnqueueTime, ProducerCount, QueueSize
 
 In addition to the above metrics, we also add a metric called "Metrics Collection Successful" with a value 0 when an error occurs and 1 when the metrics collection is successful.
 

@@ -18,4 +18,20 @@ public class ActiveMQMonitorTest {
         taskArgs.put(CONFIG_ARG, "src/test/resources/conf/config.yml");
         monitor.execute(taskArgs, null);
     }
+
+    @Test
+    public void testActiveMQMonitorExtensionWithExclude() throws TaskExecutionException {
+        ActiveMQMonitor monitor = new ActiveMQMonitor();
+        Map<String, String> taskArgs = Maps.newHashMap();
+        taskArgs.put(CONFIG_ARG, "src/test/resources/conf/config.yml.withExclude");
+        monitor.execute(taskArgs, null);
+    }
+
+    @Test
+    public void testActiveMQMonitorExtensionWithIncludeExclude() throws TaskExecutionException {
+        ActiveMQMonitor monitor = new ActiveMQMonitor();
+        Map<String, String> taskArgs = Maps.newHashMap();
+        taskArgs.put(CONFIG_ARG, "src/test/resources/conf/config.yml.withIncludeExclude");
+        monitor.execute(taskArgs, null);
+    }
 }
