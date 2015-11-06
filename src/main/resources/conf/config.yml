@@ -24,6 +24,7 @@ numberOfThreads: 10
 # Does not need to be changed.
 #
 mbeans:
+  # This Mbean will extract out Broker metrics
   - objectName: "org.apache.activemq:type=Broker,brokerName=*"
     metrics:
       include:
@@ -37,6 +38,7 @@ mbeans:
         - TotalMessageCount: "TotalMessageCount"
         - TotalProducerCount: "TotalProducerCount"
 
+  # This Mbean will extract out Queue metrics
   - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Queue,destinationName=*"
     metrics:
       include:
@@ -54,6 +56,7 @@ mbeans:
         - InFlightCount: "InFlightCount"
         - AverageMessageSize: "AverageMessageSize"
 
+  # This MBean will extract out Topic metrics.
   - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
     metrics:
       include:
