@@ -17,9 +17,11 @@ package com.appdynamics.extensions.activemq;
 
 import com.appdynamics.extensions.activemq.config.MBean;
 import com.appdynamics.extensions.activemq.config.Server;
+import com.appdynamics.extensions.util.metrics.MetricOverride;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import org.slf4j.Logger;
@@ -43,6 +45,8 @@ import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SE
 
 public class ActiveMQMonitorTask implements Runnable {
 
+	public static final double DEFAULT_MULTIPLIER = 1d;
+	public static final String DEFAULT_METRIC_TYPE = "AVERAGE AVERAGE INDIVIDUAL";
 	private String metricPrefix;
 	private Server server;
 	private AManagedMonitor metricWriter;
@@ -73,24 +77,38 @@ public class ActiveMQMonitorTask implements Runnable {
 		JMXConnector connector = null;
 		try{
 			connector = createJMXConnector();
+			if(connector == null){
+				throw new IOException("Unable to connect to Mbean server");
+			}
 			MBeanServerConnection connection = connector.getMBeanServerConnection();
 			for(MBean mBean : mbeans){
 				try {
 					ObjectName objectName = ObjectName.getInstance(mBean.getObjectName());
 					Set<ObjectInstance> objectInstances = connection.queryMBeans(objectName, null);
 					for(ObjectInstance instance : objectInstances){
-						List includeMetrics = (List)mBean.getMetrics().get("include");
+						//gathering metric names by applying exclude filter if present.
 						List excludeMetrics = (List)mBean.getMetrics().get("exclude");
-						//include and exclude may co-exist if some metrics need to be excluded
-						//and some metrics need to be overridden.
-						if(includeMetrics != null && excludeMetrics != null){
-							reportIncludeExcludeMetrics(connection, instance, includeMetrics,excludeMetrics);
+						Set<String> metricsToBeReported = Sets.newHashSet();
+						if(excludeMetrics != null){
+							gatherMetricNamesByApplyingExcludeFilter(connection, instance, excludeMetrics, metricsToBeReported);
 						}
-						else if(includeMetrics != null){
-							reportIncludeMetrics(connection,instance,includeMetrics);
+						//gathering metric names by applying include filter if present.
+						List includeMetrics = (List)mBean.getMetrics().get("include");
+						Map<String,MetricOverride> overrideMap = Maps.newHashMap();
+						if(includeMetrics != null){
+							gatherMetricNamesByApplyingIncludeFilter(includeMetrics,metricsToBeReported);
+							populateOverridesMap(includeMetrics, overrideMap);
 						}
-						else{
-							reportExcludeMetrics(connection,instance,excludeMetrics);
+						//getting all the metrics from MBean server and overriding them if
+						AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metricsToBeReported.toArray(new String[metricsToBeReported.size()]));
+						List<Attribute> list = attributeList.asList();
+						for (Attribute attr : list) {
+							if(isMetricValueValid(attr.getValue())){
+								String metricKey = getMetricsKey(instance.getObjectName(),getMetricName(overrideMap,attr.getName()));
+								BigInteger bigVal = toBigInteger(attr.getValue(), getMultiplier(overrideMap,attr.getName()));
+								String[] metricTypes = getMetricTypes(overrideMap,attr.getName());
+								printMetric(formMetricPath(metricKey), bigVal.toString(),metricTypes[0],metricTypes[1],metricTypes[2]);
+							}
 						}
 					}
 				}
@@ -107,6 +125,28 @@ public class ActiveMQMonitorTask implements Runnable {
 		}
 	}
 
+	private String[] getMetricTypes(Map<String, MetricOverride> overrideMap, String name) {
+		if(overrideMap.get(name) == null){
+			return DEFAULT_METRIC_TYPE.split(" ");
+		}
+		MetricOverride override = overrideMap.get(name);
+		return new String[]{override.getAggregator(),override.getTimeRollup(),override.getClusterRollup()};
+	}
+
+	private Double getMultiplier(Map<String, MetricOverride> overrideMap,String name) {
+		if(overrideMap.get(name) == null){
+			return DEFAULT_MULTIPLIER;
+		}
+		return overrideMap.get(name).getMultiplier();
+	}
+
+	private String getMetricName(Map<String, MetricOverride> overrideMap, String name) {
+		if(overrideMap.get(name) == null){
+			return name;
+		}
+		return overrideMap.get(name).getAlias();
+	}
+
 	private JMXConnector createJMXConnector() throws IOException {
 		JMXConnector jmxConnector;
 		final Map<String, Object> env = new HashMap<String, Object>();
@@ -121,37 +161,8 @@ public class ActiveMQMonitorTask implements Runnable {
 	}
 
 
-	private void reportIncludeExcludeMetrics(MBeanServerConnection connection, ObjectInstance instance, List includeMetrics, List excludeMetrics) throws IntrospectionException, ReflectionException, InstanceNotFoundException, IOException {
-		Map<String,Double> multiplierMap = Maps.newHashMap();
-		Map<String,String> aliasMap = Maps.newHashMap();
-		Map<String,String> metricTypeMap = Maps.newHashMap();
-		namesToPropertiesMap(includeMetrics,aliasMap,multiplierMap,metricTypeMap);
-
-		List<String> metrics = filterByExclude(connection, instance, excludeMetrics);
-		AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metrics.toArray(new String[metrics.size()]));
-		List<Attribute> list = attributeList.asList();
-		for (Attribute attr : list) {
-			if(isMetricValueValid(attr.getValue())){
-				String metricKey = getMetricsKey(instance.getObjectName(),aliasMap.get(attr.getName()) == null ? attr.getName() : aliasMap.get(attr.getName()));
-				BigInteger bigVal = toBigInteger(attr.getValue(), multiplierMap.get(attr.getName()));
-				if(metricTypeMap.get(attr.getName()) == null){
-					printAverageAverageIndividual(formMetricPath(metricKey),bigVal);
-				}
-				else {
-					String[] metricTypes = metricTypeMap.get(attr.getName()).split(" ");
-					printMetric(formMetricPath(metricKey), bigVal.toString(),metricTypes[0],metricTypes[1],metricTypes[2]);
-				}
-			}
-		}
-	}
-
-	private String formMetricPath(String metricKey) {
-		return metricPrefix + server.getDisplayName() + METRICS_SEPARATOR + metricKey;
-	}
-
-	private List<String> filterByExclude(MBeanServerConnection connection, ObjectInstance instance, List excludeMetrics) throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
+	private void gatherMetricNamesByApplyingExcludeFilter(MBeanServerConnection connection, ObjectInstance instance, List excludeMetrics, Set<String> metrics) throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException {
 		MBeanAttributeInfo[] attributes = connection.getMBeanInfo(instance.getObjectName()).getAttributes();
-		List<String> metrics = Lists.newArrayList();
 		for(MBeanAttributeInfo attr : attributes){
 			if (!excludeMetrics.contains(attr.getName())) {
 				if (attr.isReadable()) {
@@ -159,48 +170,9 @@ public class ActiveMQMonitorTask implements Runnable {
 				}
 			}
 		}
-		return metrics;
 	}
 
-	private void reportIncludeMetrics(MBeanServerConnection connection, ObjectInstance instance, List includeMetrics) throws InstanceNotFoundException, IOException, ReflectionException {
-		//first get all metric names
-		List<String> metrics = getMetricNames(includeMetrics);
-		Map<String,Double> multiplierMap = Maps.newHashMap();
-		Map<String,String> aliasMap = Maps.newHashMap();
-		Map<String,String> metricTypeMap = Maps.newHashMap();
-		namesToPropertiesMap(includeMetrics,aliasMap,multiplierMap,metricTypeMap);
-
-		AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metrics.toArray(new String[metrics.size()]));
-		List<Attribute> list = attributeList.asList();
-		for (Attribute attr : list) {
-			if(isMetricValueValid(attr.getValue())){
-				String metricKey = getMetricsKey(instance.getObjectName(),aliasMap.get(attr.getName()));
-				BigInteger bigVal = toBigInteger(attr.getValue(), multiplierMap.get(attr.getName()));
-				if(metricTypeMap.get(attr.getName()) == null){
-					printAverageAverageIndividual(formMetricPath(metricKey),bigVal);
-				}
-				else {
-					String[] metricTypes = metricTypeMap.get(attr.getName()).split(" ");
-					printMetric(formMetricPath(metricKey), bigVal.toString(),metricTypes[0],metricTypes[1],metricTypes[2]);
-				}
-			}
-		}
-	}
-
-	private void namesToPropertiesMap(List includeMetrics, Map<String, String> aliasMap, Map<String, Double> multiplierMap, Map<String, String> metricTypeMap) {
-		for(Object inc : includeMetrics){
-			Map metric = (Map) inc;
-			//Get the First Entry which is the metric
-			Map.Entry firstEntry = (Map.Entry) metric.entrySet().iterator().next();
-			String metricName = firstEntry.getKey().toString();
-			aliasMap.put(metricName,firstEntry.getValue().toString());
-			multiplierMap.put(metricName,(metric.get("multiplier") != null) ? Double.parseDouble(metric.get("multiplier").toString()) : 1d);
-			metricTypeMap.put(metricName,(metric.get("metricType") != null) ? metric.get("metricType").toString() : null);
-		}
-	}
-
-	private List<String> getMetricNames(List includeMetrics) {
-		List<String> metrics = Lists.newArrayList();
+	private void gatherMetricNamesByApplyingIncludeFilter(List includeMetrics,Set<String> metrics) {
 		for(Object inc : includeMetrics){
 			Map metric = (Map) inc;
 			//Get the First Entry which is the metric
@@ -208,26 +180,39 @@ public class ActiveMQMonitorTask implements Runnable {
 			String metricName = firstEntry.getKey().toString();
 			metrics.add(metricName); //to get jmx metrics
 		}
-		return metrics;
 	}
 
 
-	private void reportExcludeMetrics(MBeanServerConnection connection,ObjectInstance instance,List excludeMetrics) throws Exception {
-		List<String> metrics = filterByExclude(connection, instance, excludeMetrics);
-		AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metrics.toArray(new String[metrics.size()]));
-		List<Attribute> list = attributeList.asList();
-		for (Attribute attr : list) {
-			if(isMetricValueValid(attr.getValue())){
-				String metricKey = getMetricsKey(instance.getObjectName(),attr.getName());
-				printAverageAverageIndividual(formMetricPath(metricKey),toBigInteger(attr.getValue(),1d));
-			}
+	private String formMetricPath(String metricKey) {
+		return metricPrefix + server.getDisplayName() + METRICS_SEPARATOR + metricKey;
+	}
+
+
+
+	private void populateOverridesMap(List includeMetrics, Map<String, MetricOverride> overrideMap) {
+		for(Object inc : includeMetrics){
+			Map metric = (Map) inc;
+			//Get the First Entry which is the metric
+			Map.Entry firstEntry = (Map.Entry) metric.entrySet().iterator().next();
+			String metricName = firstEntry.getKey().toString();
+			MetricOverride override = new MetricOverride();
+			override.setAlias(firstEntry.getValue().toString());
+			override.setMultiplier(metric.get("multiplier") != null ? Double.parseDouble(metric.get("multiplier").toString()) : DEFAULT_MULTIPLIER);
+			String metricType = metric.get("metricType") != null ? metric.get("metricType").toString() : DEFAULT_METRIC_TYPE;
+			String[] metricTypes = metricType.split(" ");
+			override.setAggregator(metricTypes[0]);
+			override.setTimeRollup(metricTypes[1]);
+			override.setClusterRollup(metricTypes[2]);
+			overrideMap.put(metricName,override);
 		}
 	}
+
+
 
 	private BigInteger toBigInteger(Object value,Double multiplier) {
 		try {
 			BigDecimal bigD = new BigDecimal(value.toString());
-			if(multiplier != null && multiplier != 1d) {
+			if(multiplier != null && multiplier != DEFAULT_MULTIPLIER) {
 				bigD = bigD.multiply(new BigDecimal(multiplier));
 			}
 			return bigD.setScale(0, RoundingMode.HALF_UP).toBigInteger();
@@ -237,10 +222,6 @@ public class ActiveMQMonitorTask implements Runnable {
 		return BigInteger.ZERO;
 	}
 
-
-	private void printAverageAverageIndividual(String metricPath,BigInteger metricValue){
-		printMetric(metricPath,metricValue.toString(),MetricWriter.METRIC_AGGREGATION_TYPE_AVERAGE,MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
-	}
 
 
 	private void printMetric(String metricPath,String metricValue,String aggType,String timeRollupType,String clusterRollupType) {

@@ -9,7 +9,7 @@ metricPrefix: Custom Metrics|ActiveMQ
 # List of ActiveMQ Servers
 servers:
   - host: "localhost"
-    port: 1099
+    port: 1616
     username: ""
     password: ""
     encryptedPassword: ""
@@ -36,7 +36,8 @@ mbeans:
         - TotalConnectionsCount: "TotalConnectionsCount"
         - TotalConsumerCount: "TotalConsumerCount"
         - TotalDequeueCount: "TotalDequeueCount"
-        - TotalEnqueueCount: "TotalEnqueueCount"
+        - TotalEnqueueCount: "TotalEnqueueCountDecimal"
+          multiplier: 3.4545
         - TotalMessageCount: "TotalMessageCount"
         - TotalProducerCount: "TotalProducerCount"
 
