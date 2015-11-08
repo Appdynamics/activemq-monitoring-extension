@@ -230,8 +230,8 @@ public class ActiveMQMonitorTask implements Runnable {
 				timeRollupType,
 				clusterRollupType
 		);
-		System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
-				+ "] metric = " + metricPath + " = " + metricValue);
+		//System.out.println("Sending [" + aggType + METRICS_SEPARATOR + timeRollupType + METRICS_SEPARATOR + clusterRollupType
+		//		+ "] metric = " + metricPath + " = " + metricValue);
 		logger.debug("Sending [{}|{}|{}] metric= {},value={}", aggType, timeRollupType, clusterRollupType,metricPath,metricValue);
 		writer.printMetric(metricValue);
 	}
