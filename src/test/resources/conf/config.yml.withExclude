@@ -28,7 +28,7 @@ mbeans:
   - objectName: "org.apache.activemq:type=Broker,brokerName=*"
     metrics:
       include:
-        - StorePercentUsage: "StorePercentUsage"
+        - StorePercentUsage: "StorePercentUsageMyAlias"
           metricType: "SUM AVERAGE COLLECTIVE"
           multiplier: 1
         - TempPercentUsage: "TempPercentUsageThisIsTest"

@@ -120,8 +120,10 @@ public class ActiveMQMonitorTask implements Runnable {
 				}
 			}
 		}
-		finally{
-			connector.close();
+		finally {
+			if (connector != null) {
+				connector.close();
+			}
 		}
 	}
 
