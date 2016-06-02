@@ -121,12 +121,12 @@ public class ActiveMQMonitor extends AManagedMonitor {
 			executorServiceSize = numOfThreads;
 			//decrypt password
 			if(config.getEncryptionKey() != null){
-				for(Server server : config.getServers()) {
-					Map cryptoMap = Maps.newHashMap();
-					cryptoMap.put(PASSWORD_ENCRYPTED,server.getEncryptedPassword());
-					cryptoMap.put(ENCRYPTION_KEY,config.getEncryptionKey());
-					server.setPassword(CryptoUtil.getPassword(cryptoMap));
-				}
+					for(Server server : config.getServers()) {
+						Map cryptoMap = Maps.newHashMap();
+						cryptoMap.put(PASSWORD_ENCRYPTED,server.getEncryptedPassword());
+						cryptoMap.put(ENCRYPTION_KEY,config.getEncryptionKey());
+						server.setPassword(CryptoUtil.getPassword(cryptoMap));
+					}
 			}
 		}
 		else {

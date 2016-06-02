@@ -19,7 +19,6 @@ import com.appdynamics.extensions.activemq.config.MBean;
 import com.appdynamics.extensions.activemq.config.Server;
 import com.appdynamics.extensions.util.metrics.MetricOverride;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
@@ -85,6 +84,7 @@ public class ActiveMQMonitorTask implements Runnable {
 				try {
 					ObjectName objectName = ObjectName.getInstance(mBean.getObjectName());
 					Set<ObjectInstance> objectInstances = connection.queryMBeans(objectName, null);
+					logger.debug("The ObjectInstances for object name [{}] are {}",mBean.getObjectName(),objectInstances);
 					for(ObjectInstance instance : objectInstances){
 						//gathering metric names by applying exclude filter if present.
 						List excludeMetrics = (List)mBean.getMetrics().get("exclude");
@@ -92,6 +92,7 @@ public class ActiveMQMonitorTask implements Runnable {
 						if(excludeMetrics != null){
 							gatherMetricNamesByApplyingExcludeFilter(connection, instance, excludeMetrics, metricsToBeReported);
 						}
+						logger.debug("The metrics after filtering the excludes are {}", metricsToBeReported);
 						//gathering metric names by applying include filter if present.
 						List includeMetrics = (List)mBean.getMetrics().get("include");
 						Map<String,MetricOverride> overrideMap = Maps.newHashMap();
@@ -99,15 +100,19 @@ public class ActiveMQMonitorTask implements Runnable {
 							gatherMetricNamesByApplyingIncludeFilter(includeMetrics,metricsToBeReported);
 							populateOverridesMap(includeMetrics, overrideMap);
 						}
+						logger.debug("The metrics after filtering the includes are {}", metricsToBeReported);
 						//getting all the metrics from MBean server and overriding them if
 						AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metricsToBeReported.toArray(new String[metricsToBeReported.size()]));
 						List<Attribute> list = attributeList.asList();
+						logger.debug("The name-value of the final list of metrics are [{}]", list);
 						for (Attribute attr : list) {
 							if(isMetricValueValid(attr.getValue())){
 								String metricKey = getMetricsKey(instance.getObjectName(),getMetricName(overrideMap,attr.getName()));
 								BigInteger bigVal = toBigInteger(attr.getValue(), getMultiplier(overrideMap,attr.getName()));
 								String[] metricTypes = getMetricTypes(overrideMap,attr.getName());
 								printMetric(formMetricPath(metricKey), bigVal.toString(),metricTypes[0],metricTypes[1],metricTypes[2]);
+							} else{
+								logger.debug("The metric value of the attribute [{}]=[{}] is not valid", attr.getName(), attr.getValue());
 							}
 						}
 					}
@@ -154,9 +159,11 @@ public class ActiveMQMonitorTask implements Runnable {
 		final Map<String, Object> env = new HashMap<String, Object>();
 		if(!Strings.isNullOrEmpty(server.getUsername())){
 			env.put(JMXConnector.CREDENTIALS,new String[]{server.getUsername(),server.getPassword()});
+			logger.debug("Attempting a connection to [{}] with the credentials ****",serviceURL);
 			jmxConnector = JMXConnectorFactory.connect(serviceURL, env);
 		}
 		else{
+			logger.debug("Attempting a connection to [{}] without the credentials", serviceURL);
 			jmxConnector = JMXConnectorFactory.connect(serviceURL);
 		}
 		return jmxConnector;
