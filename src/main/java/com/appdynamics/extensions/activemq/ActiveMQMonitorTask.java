@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.appdynamics.extensions.activemq;
+import com.google.common.collect.Lists;
 
 import com.appdynamics.extensions.activemq.config.MBean;
 import com.appdynamics.extensions.activemq.config.Server;
@@ -30,6 +31,7 @@ import javax.management.*;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.management.openmbean.CompositeDataSupport;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -101,8 +103,62 @@ public class ActiveMQMonitorTask implements Runnable {
 							populateOverridesMap(includeMetrics, overrideMap);
 						}
 						logger.debug("The metrics after filtering the includes are {}", metricsToBeReported);
+
+
+						/**
+						 * Trying to get composite data metrics
+						 * The metrics are being stored in metricsToBeReported.
+						 *  Split the metric name and then
+						 *  Obtain the first part of the attribute and then
+						 *  go to the attribute, use the dictionary where you store the sub parts and
+						 *  get the required metrics.
+						 */
+
+
+						Map<String,List<String>> compositeAttributesFound = new HashMap<String, List<String>>();
+						List<String> attrNames;
+
+						for(String metricName: metricsToBeReported){
+							String metricNameFromObj = Util.getMetricNameFromCompositeObject(metricName);
+							attrNames  = compositeAttributesFound.get(metricNameFromObj);
+
+							//List<String> attrNames = Lists.newArrayList();
+
+							if (Util.isCompositeObject(metricName)){
+								if(attrNames == null){
+									attrNames = Lists.newArrayList();
+									String metricValueFromObj = Util.getMetricValueFromCompositeObject(metricName);
+									attrNames.add(metricValueFromObj);
+								}
+								else{
+									attrNames.add(Util.getMetricValueFromCompositeObject(metricName));
+								}
+
+							}
+							compositeAttributesFound.put(metricNameFromObj,attrNames);
+						}
+
+						// creates a new set of metrics to be reported
+						Set<String> newMetricsToBeReported = Sets.newHashSet();
+						// adds all metrics that need to be reported except the composite metrics that are found
+						for(String metricName: metricsToBeReported){
+							if(!Util.isCompositeObject(metricName)){
+								newMetricsToBeReported.add(metricName);
+							}
+						}
+
+						// adds the firstname(AttributeName) of the composite metrics that need to be reported
+						for(String metricName: compositeAttributesFound.keySet()){
+							newMetricsToBeReported.add(metricName);
+						}
+
+
 						//getting all the metrics from MBean server and overriding them if
-						AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metricsToBeReported.toArray(new String[metricsToBeReported.size()]));
+//						AttributeList attributeList = connection.getAttributes(instance.getObjectName(), metricsToBeReported.toArray(new String[metricsToBeReported.size()]));
+
+
+						AttributeList attributeList = connection.getAttributes(instance.getObjectName(), newMetricsToBeReported.toArray(new String[newMetricsToBeReported.size()]));
+
 						List<Attribute> list = attributeList.asList();
 						logger.debug("The name-value of the final list of metrics are [{}]", list);
 						for (Attribute attr : list) {
@@ -111,7 +167,22 @@ public class ActiveMQMonitorTask implements Runnable {
 								BigInteger bigVal = toBigInteger(attr.getValue(), getMultiplier(overrideMap,attr.getName()));
 								String[] metricTypes = getMetricTypes(overrideMap,attr.getName());
 								printMetric(formMetricPath(metricKey), bigVal.toString(),metricTypes[0],metricTypes[1],metricTypes[2]);
-							} else{
+							}/* checking for composite type metrics */
+							else if(isCurrentObjectComposite(attr)){
+
+								Set<String> compositeAttrFound = ((CompositeDataSupport) attr.getValue()).getCompositeType().keySet();
+								for(String str : compositeAttrFound){
+									String key = attr.getName()+ "." + str;
+									if(overrideMap.containsKey(key)){
+										String metricKey = getMetricsKey(instance.getObjectName(), getMetricName(overrideMap, key));
+										Object compositeAttrValue = ((CompositeDataSupport) attr.getValue()).get(str);
+										String[] metricTypes = getMetricTypes(overrideMap,key);
+
+										printMetric(formMetricPath(metricKey), compositeAttrValue.toString(), metricTypes[0],metricTypes[1],metricTypes[2] );
+									}
+								}
+							}
+							else{
 								logger.debug("The metric value of the attribute [{}]=[{}] is not valid", attr.getName(), attr.getValue());
 							}
 						}
@@ -131,6 +202,13 @@ public class ActiveMQMonitorTask implements Runnable {
 			}
 		}
 	}
+
+
+	private boolean isCurrentObjectComposite (Attribute attribute) {
+		return attribute.getValue().getClass().equals(CompositeDataSupport.class);
+	}
+
+
 
 	private String[] getMetricTypes(Map<String, MetricOverride> overrideMap, String name) {
 		if(overrideMap.get(name) == null){
