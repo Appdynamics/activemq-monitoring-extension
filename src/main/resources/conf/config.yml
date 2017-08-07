@@ -81,8 +81,8 @@ mbeans:
   - objectName: "java.lang:type=Memory"
     metrics:
       include:
-        - HeapMemoryUsage.committed : "Heap Memory Usage|Heap Memory Committed"
-        - HeapMemoryUsage.used : "Heap Memory Usage|Heap Memory Used"
-        - NonHeapMemoryUsage.committed : "Non Heap Memory Usage|Non Heap Memory Committed"
-        - NonHeapMemoryUsage.used : "Non Heap Memory Usage|Non Heap Memory Used"
+        - HeapMemoryUsage.committed : "Heap Memory Usage|Committed"
+        - HeapMemoryUsage.used : "Heap Memory Usage|Used"
+        - NonHeapMemoryUsage.committed : "Non Heap Memory Usage|Committed"
+        - NonHeapMemoryUsage.used : "Non Heap Memory Usage|Used"
 
