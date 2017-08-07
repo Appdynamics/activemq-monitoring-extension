@@ -8,12 +8,14 @@ metricPrefix: Custom Metrics|ActiveMQ
 
 # List of ActiveMQ Servers
 servers:
-  - host: "localhost"
-    port: 1099
-    username: ""
-    password: ""
-    #displayName is a required field. This will be your server name that will show up in metric path.
-    displayName: "localhost"
+  -
+      #host: "localhost"
+      #port: 8161
+      serviceUrl: "service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi"
+      username: ""
+      password: ""
+      #displayName is a required field. This will be your server name that will show up in metric path.
+      displayName: "localhost"
 
 
 # number of concurrent tasks.
@@ -75,4 +77,12 @@ mbeans:
         - InFlightCount: "InFlightCount"
         - AverageMessageSize: "AverageMessageSize"
 
+
+  - objectName: "java.lang:type=Memory"
+    metrics:
+      include:
+        - HeapMemoryUsage.committed : "Heap Memory Usage|Heap Memory Committed"
+        - HeapMemoryUsage.used : "Heap Memory Usage|Heap Memory Used"
+        - NonHeapMemoryUsage.committed : "Non Heap Memory Usage|Non Heap Memory Committed"
+        - NonHeapMemoryUsage.used : "Non Heap Memory Usage|Non Heap Memory Used"
 
