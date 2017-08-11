@@ -66,12 +66,6 @@ public class ActiveMQMonitor extends AManagedMonitor{
 
     private MonitorConfiguration configuration;
 
-//    private ExecutorService executorService;
-//    private int executorServiceSize;
-//    private volatile boolean initialized;
-//    private Configuration config;
-
-
     private static String getImplementationVersion() {
         return ActiveMQMonitor.class.getPackage().getImplementationVersion();
     }
