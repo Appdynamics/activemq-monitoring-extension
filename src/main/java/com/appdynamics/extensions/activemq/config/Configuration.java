@@ -19,7 +19,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SEPARATOR;
+//import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SEPARATOR;
 
 public class Configuration {
 
@@ -55,8 +55,8 @@ public class Configuration {
 	}
 
 	public void setMetricPrefix(String metricPrefix) {
-		if(!metricPrefix.endsWith(METRICS_SEPARATOR)){
-			metricPrefix = metricPrefix + METRICS_SEPARATOR;
+		if(!metricPrefix.endsWith("|")){
+			metricPrefix = metricPrefix + "|";
 		}
 		this.metricPrefix = metricPrefix;
 	}

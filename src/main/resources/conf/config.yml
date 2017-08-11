@@ -1,11 +1,5 @@
 ### ANY CHANGES TO THIS FILE DOES NOT REQUIRE A RESTART ###
 
-#This will create this metric in all the tiers, under this path
-metricPrefix: Custom Metrics|ActiveMQ
-
-#This will create it in specific Tier. Replace <TIER_NAME>
-#metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|ActiveMQ
-
 # List of ActiveMQ Servers
 servers:
   -
@@ -22,6 +16,15 @@ servers:
 # This doesn't need to be changed unless many servers are configured
 numberOfThreads: 10
 
+#timeout for the thread
+threadTimeout: 30
+
+
+#This will create this metric in all the tiers, under this path
+#metricPrefix: Custom Metrics|ActiveMQ
+
+#This will create it in specific Tier. Replace <TIER_NAME>
+metricPrefix: "Server|Component:13|Custom Metrics|ActiveMQ"
 
 # The configuration of different metrics from various mbeans of activemq server
 # The mbeans are already configured.This does not need to be changed unless
