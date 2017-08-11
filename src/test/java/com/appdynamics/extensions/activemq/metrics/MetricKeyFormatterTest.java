@@ -1,0 +1,42 @@
+package com.appdynamics.extensions.activemq.metrics;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
+
+public class MetricKeyFormatterTest {
+
+    MetricKeyFormatter metricKeyFormatter = new MetricKeyFormatter();
+
+    @Test
+    public void whenObjectInstanceIsNull_thenReturnEmpty(){
+        Assert.assertTrue(metricKeyFormatter.getInstanceKey(null).isEmpty());
+    }
+
+    @Test
+    public void whenValidObjectInstance_thenReturnValidPrefix() throws MalformedObjectNameException {
+        ObjectInstance instance = new ObjectInstance(new ObjectName("org.apache.activemq.metrics:type=Cache,scope=KeyCache,name=Capacity"),this.getClass().getName());
+        String prefix = metricKeyFormatter.getInstanceKey(instance);
+        Assert.assertTrue(prefix.equals("Cache|KeyCache|Capacity|"));
+    }
+
+   @Test
+    public void whenAllArgsValid_thenReturnNodeKey() throws MalformedObjectNameException {
+        ObjectInstance instance = new ObjectInstance(new ObjectName("org.apache.activemq.metrics:type=Cache,scope=KeyCache,name=Capacity"),this.getClass().getName());
+        String prefix = metricKeyFormatter.getInstanceKey(instance);
+        String nodeKey = metricKeyFormatter.getNodeKey(instance, "Cache Capacity (MB)", prefix);
+        Assert.assertTrue(nodeKey.equals("Cache|KeyCache|Capacity|Cache Capacity (MB)"));
+    }
+
+   @Test
+    public void whenSomeArgsValid_thenShouldNotThrowExceptions() throws MalformedObjectNameException {
+        ObjectInstance instance = new ObjectInstance(new ObjectName("org.apache.activemq.metrics:type=Cache,scope=KeyCache,name=Capacity"),this.getClass().getName());
+        String prefix = metricKeyFormatter.getInstanceKey(instance);
+        String nodeKey = metricKeyFormatter.getNodeKey(instance,"Value",prefix);
+        Assert.assertTrue(!nodeKey.isEmpty());
+    }
+
+}
