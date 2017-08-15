@@ -42,7 +42,7 @@ public class ActiveMQMonitorTask implements  Runnable{
                     MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION, MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
                     MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
         } catch (Exception e) {
-            logger.error("Error in Cassandra Monitoring Task for Server {}", serverName, e);
+            logger.error("Error in ActiveMQ Monitoring Task for Server {}", serverName, e);
             metricPrinter.printMetric(metricPrinter.formMetricPath(METRICS_COLLECTION_SUCCESSFUL), BigDecimal.ZERO,
                     MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION, MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
                     MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
