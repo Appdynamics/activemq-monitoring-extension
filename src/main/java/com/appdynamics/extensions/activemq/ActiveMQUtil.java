@@ -8,13 +8,13 @@ import java.math.RoundingMode;
  */
 public class ActiveMQUtil {
     public static String convertToString(final Object field, final String defaultStr) {
-        if(field == null) {
+        if (field == null) {
             return defaultStr;
         }
         return field.toString();
     }
 
-    public static String[] split(final String metricType,final String splitOn) {
+    public static String[] split(final String metricType, final String splitOn) {
         return metricType.split(splitOn);
     }
 
@@ -22,7 +22,7 @@ public class ActiveMQUtil {
         return bigD.setScale(0, RoundingMode.HALF_UP).toBigInteger().toString();
     }
 
-    public static boolean isCompositeObject (String objectName) {
+    public static boolean isCompositeObject(String objectName) {
         return (objectName.indexOf('.') != -1);
     }
 

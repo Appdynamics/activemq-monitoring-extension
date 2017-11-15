@@ -19,7 +19,6 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-//import static com.appdynamics.extensions.util.metrics.MetricConstants.METRICS_SEPARATOR;
 
 public class Configuration {
 

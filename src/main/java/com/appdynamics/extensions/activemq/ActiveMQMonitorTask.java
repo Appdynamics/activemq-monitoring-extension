@@ -17,7 +17,7 @@ import java.util.Map;
 import static com.appdynamics.extensions.activemq.Constants.DISPLAY_NAME;
 
 
-public class ActiveMQMonitorTask implements  Runnable{
+public class ActiveMQMonitorTask implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ActiveMQMonitorTask.class);
     private static final BigDecimal ERROR_VALUE = BigDecimal.ZERO;
@@ -30,11 +30,11 @@ public class ActiveMQMonitorTask implements  Runnable{
     private List<Map> configMBeans;
     private String serverName;
 
-    public void run(){
-        serverName = ActiveMQUtil.convertToString(server.get(DISPLAY_NAME),"");
+    public void run() {
+        serverName = ActiveMQUtil.convertToString(server.get(DISPLAY_NAME), "");
         MetricPrinter metricPrinter = new MetricPrinter(metricPrefix, serverName, metricWriter);
 
-        try{
+        try {
             logger.debug("ActiveMQ monitoring task initiated for server {}", serverName);
             BigDecimal status = populateAndPrintStats(metricPrinter);
 
@@ -52,40 +52,37 @@ public class ActiveMQMonitorTask implements  Runnable{
         }
     }
 
-    private BigDecimal populateAndPrintStats(MetricPrinter metricPrinter) throws IOException{
+    private BigDecimal populateAndPrintStats(MetricPrinter metricPrinter) throws IOException {
         JMXConnector jmxConnector = null;
 
-        try{
+        try {
             jmxConnector = jmxConnectionAdapter.open();
             logger.debug("JMX Connection is now open");
             MetricPropertiesBuilder propertiesBuilder = new MetricPropertiesBuilder();
 
-            for(Map mBean: configMBeans){
-                String configObjName = ActiveMQUtil.convertToString(mBean.get("objectName"),"");
+            for (Map mBean : configMBeans) {
+                String configObjName = ActiveMQUtil.convertToString(mBean.get("objectName"), "");
                 logger.debug("Processing mBeam {} from the config file", configObjName);
 
                 try {
-                    Map<String , MetricProperties> metricProperties = propertiesBuilder.build(mBean);
-                    NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter,jmxConnector);
+                    Map<String, MetricProperties> metricProperties = propertiesBuilder.build(mBean);
+                    NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
                     List<Metric> nodeMetrics = nodeMetricsProcessor.getNodeMetrics(mBean, metricProperties, metricPrefix);
 
-                    if(nodeMetrics.size() >0){
+                    if (nodeMetrics.size() > 0) {
                         metricPrinter.reportNodeMetrics(nodeMetrics);
                     }
-                }
-                catch (MalformedObjectNameException e){
+                } catch (MalformedObjectNameException e) {
                     logger.error("Illegal Object Name {} " + configObjName, e);
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     logger.error("Error fetching JMX metrics for {} and mBeam = {}", serverName, configObjName, e);
                 }
             }
-        }
-        finally {
+        } finally {
             try {
                 jmxConnectionAdapter.close(jmxConnector);
                 logger.debug("JMX connection is closed.");
-            }catch (IOException e){
+            } catch (IOException e) {
                 logger.error("Unable to close the JMX connection.");
                 return ERROR_VALUE;
             }
@@ -94,35 +91,35 @@ public class ActiveMQMonitorTask implements  Runnable{
     }
 
 
-    public static class Builder{
+    public static class Builder {
         private ActiveMQMonitorTask task = new ActiveMQMonitorTask();
 
-        Builder metricPrefix(String metricPrefix){
+        Builder metricPrefix(String metricPrefix) {
             task.metricPrefix = metricPrefix;
             return this;
         }
 
-        Builder metricWriter (MetricWriteHelper metricWriter) {
+        Builder metricWriter(MetricWriteHelper metricWriter) {
             task.metricWriter = metricWriter;
             return this;
         }
 
-        Builder server (Map server) {
+        Builder server(Map server) {
             task.server = server;
             return this;
         }
 
-        Builder jmxConnectionAdapter (JMXConnectionAdapter adapter) {
+        Builder jmxConnectionAdapter(JMXConnectionAdapter adapter) {
             task.jmxConnectionAdapter = adapter;
             return this;
         }
 
-        Builder mbeans (List<Map> mBeans) {
+        Builder mbeans(List<Map> mBeans) {
             task.configMBeans = mBeans;
             return this;
         }
 
-        ActiveMQMonitorTask build () {
+        ActiveMQMonitorTask build() {
             return task;
         }
     }
