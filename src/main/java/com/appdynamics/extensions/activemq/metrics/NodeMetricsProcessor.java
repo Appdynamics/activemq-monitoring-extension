@@ -1,5 +1,6 @@
 package com.appdynamics.extensions.activemq.metrics;
-
+import com.appdynamics.extensions.metrics.Metric;
+import com.appdynamics.extensions.metrics.MetricProperties;
 import com.appdynamics.extensions.activemq.ActiveMQUtil;
 import com.appdynamics.extensions.activemq.JMXConnectionAdapter;
 import com.appdynamics.extensions.activemq.filters.IncludeFilter;
@@ -88,18 +89,27 @@ public class NodeMetricsProcessor {
             logger.error("Could not find metric properties for {} ", attributeName);
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
-        BigDecimal metricValue = valueConverter.transform(metricPrefix + "|" + instanceKey + attributeName, attributeValue, props);
-        if (metricValue != null) {
-            Metric nodeMetric = new Metric();
-            nodeMetric.setProperties(props);
-            nodeMetric.setMetricName(attributeName);
-            nodeMetric.setInstanceKey(instanceKey);
-            String metricName = nodeMetric.getMetricNameOrAlias();
-            String nodeMetricKey = metricKeyFormatter.getNodeKey(instance, metricName, instanceKey);
-            nodeMetric.setMetricKey(nodeMetricKey);
-            nodeMetric.setMetricValue(metricValue);
-            nodeMetrics.add(nodeMetric);
-        }
+        String metricPath = metricPrefix + "|" + instanceKey+ attributeName;
+
+        Metric current_metric =  new Metric(attributeName, (String)attributeValue,metricPath, metricPropsPerMetricName);
+
+
+        nodeMetrics.add(current_metric);
+
+
+//        BigDecimal metricValue = valueConverter.transform(metricPrefix + "|" + instanceKey + attributeName, attributeValue, props);
+
+//        if (metricValue != null) {
+//            Metric nodeMetric = new Metric();
+//            nodeMetric.setProperties(props);
+//            nodeMetric.setMetricName(attributeName);
+//            nodeMetric.setInstanceKey(instanceKey);
+//            String metricName = nodeMetric.getMetricNameOrAlias();
+//            String nodeMetricKey = metricKeyFormatter.getNodeKey(instance, metricName, instanceKey);
+//            nodeMetric.setMetricKey(nodeMetricKey);
+//            nodeMetric.setMetricValue(metricValue);
+//            nodeMetrics.add(nodeMetric);
+//        }
     }
 
     private boolean isCurrentObjectComposite (Attribute attribute) {

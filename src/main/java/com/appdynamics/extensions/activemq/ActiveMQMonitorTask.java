@@ -1,8 +1,10 @@
 package com.appdynamics.extensions.activemq;
 
+import com.appdynamics.extensions.metrics.Metric;
 
+import com.appdynamics.extensions.AMonitorTaskRunnable;
 import com.appdynamics.extensions.activemq.metrics.*;
-import com.appdynamics.extensions.util.MetricWriteHelper;
+import com.appdynamics.extensions.MetricWriteHelper;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,8 @@ import java.util.Map;
 import static com.appdynamics.extensions.activemq.Constants.DISPLAY_NAME;
 
 
-public class ActiveMQMonitorTask implements Runnable {
+public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
+    private Boolean status = true;
 
     private static final Logger logger = LoggerFactory.getLogger(ActiveMQMonitorTask.class);
     private static final BigDecimal ERROR_VALUE = BigDecimal.ZERO;
@@ -46,6 +49,8 @@ public class ActiveMQMonitorTask implements Runnable {
             metricPrinter.printMetric(metricPrinter.formMetricPath(METRICS_COLLECTION_SUCCESSFUL), BigDecimal.ZERO,
                     MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION, MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
                     MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
+            status = false;
+
         } finally {
             logger.debug("ActiveMQ Monitoring Task Complete. Total number of metrics reported = {}", metricPrinter
                     .getTotalMetricsReported());
@@ -70,7 +75,9 @@ public class ActiveMQMonitorTask implements Runnable {
                     List<Metric> nodeMetrics = nodeMetricsProcessor.getNodeMetrics(mBean, metricProperties, metricPrefix);
 
                     if (nodeMetrics.size() > 0) {
-                        metricPrinter.reportNodeMetrics(nodeMetrics);
+                        metricWriter.transformAndPrintMetrics(nodeMetrics);
+
+//                        metricPrinter.reportNodeMetrics(nodeMetrics);
                     }
                 } catch (MalformedObjectNameException e) {
                     logger.error("Illegal Object Name {} " + configObjName, e);
@@ -88,6 +95,15 @@ public class ActiveMQMonitorTask implements Runnable {
             }
         }
         return SUCCESS_VALUE;
+    }
+
+    public void onTaskComplete() {
+        logger.debug("Task Complete");
+        if (status == true) {
+            metricWriter.printMetric(metricPrefix + "|" + (String) server.get("displayName"), "1", "AVERAGE", "AVERAGE", "INDIVIDUAL");
+        } else {
+            metricWriter.printMetric(metricPrefix + "|" + (String) server.get("displayName"), "0", "AVERAGE", "AVERAGE", "INDIVIDUAL");
+        }
     }
 
 

@@ -1,7 +1,7 @@
 package com.appdynamics.extensions.activemq.metrics;
 
 
-import com.appdynamics.extensions.util.MetricWriteHelper;
+import com.appdynamics.extensions.MetricWriteHelper;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
