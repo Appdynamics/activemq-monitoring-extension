@@ -16,6 +16,7 @@
 
 package com.appdynamics.extensions.activemq;
 
+import java.util.HashMap;
 import com.appdynamics.TaskInputArgs;
 import com.appdynamics.extensions.conf.MonitorConfiguration;
 import com.appdynamics.extensions.crypto.CryptoUtil;
@@ -145,6 +146,19 @@ public class ActiveMQMonitor extends AManagedMonitor {
         }
 
         return null;
+    }
+    // TODO * Fix the implementation version
+    // TODO * Fix the metrix Path Bug
+    // TODO * Port to Extensions 2.0.0
+    // TODO * Remove Main method and uncomment pom dependencies
+
+    public static void main (String[] args) throws TaskExecutionException {
+        ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
+
+        Map<String, String> argsMap = new HashMap<String, String>();
+        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension" +
+                "" + "" + "/src/main/resources/conf/config.yml");
+        activeMQMonitor.execute(argsMap, null);
     }
 
 }
