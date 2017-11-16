@@ -148,7 +148,6 @@ public class ActiveMQMonitor extends AManagedMonitor {
         return null;
     }
     // TODO * Fix the implementation version
-    // TODO * Fix the metrix Path Bug
     // TODO * Port to Extensions 2.0.0
     // TODO * Remove Main method and uncomment pom dependencies
 

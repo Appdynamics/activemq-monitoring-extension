@@ -11,7 +11,6 @@ servers:
       #displayName is a required field. This will be your server name that will show up in metric path.
       displayName: "localhost"
 
-
 # number of concurrent tasks.
 # This doesn't need to be changed unless many servers are configured
 numberOfThreads: 10
