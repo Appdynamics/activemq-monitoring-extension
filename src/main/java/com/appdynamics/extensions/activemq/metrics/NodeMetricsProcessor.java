@@ -73,7 +73,7 @@ public class NodeMetricsProcessor {
                         }
                     }
                 } else {
-                    setMetricDetails(metricPrefix, attribute.getName(), attribute.getValue(), instance, metricPropsPerMetricName,
+                    setMetricDetails(metricPrefix, attribute.getName(), attribute.getValue().toString(), instance, metricPropsPerMetricName,
                             nodeMetrics);
                 }
             } catch (Exception e) {
@@ -91,7 +91,7 @@ public class NodeMetricsProcessor {
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
         String metricPath = metricPrefix + "|" + instanceKey+ attributeName;
 
-        Metric current_metric =  new Metric(attributeName, (String)attributeValue,metricPath, metricPropsPerMetricName);
+        Metric current_metric =  new Metric(attributeName, attributeValue.toString(),metricPath, metricPropsPerMetricName);
 
 
         nodeMetrics.add(current_metric);

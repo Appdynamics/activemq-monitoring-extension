@@ -1,6 +1,6 @@
 package com.appdynamics.extensions.activemq.metrics;
 
-import com.appdynamics.extensions.util.MetricWriteHelper;
+import com.appdynamics.extensions.MetricWriteHelper;
 import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Test;
