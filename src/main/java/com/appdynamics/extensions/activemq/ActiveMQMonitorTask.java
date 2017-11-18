@@ -7,17 +7,15 @@ import com.appdynamics.extensions.activemq.metrics.*;
 import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.extensions.metrics.MetricProperties;
-import com.appdynamics.extensions.metrics.MetricPropertiesBuilder;
-import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.remote.JMXConnector;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+
 import com.google.common.collect.Maps;
 
 import static com.appdynamics.extensions.activemq.Constants.DISPLAY_NAME;
@@ -29,9 +27,6 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
     private Boolean status = true;
 
     private static final Logger logger = LoggerFactory.getLogger(ActiveMQMonitorTask.class);
-    private static final BigDecimal ERROR_VALUE = BigDecimal.ZERO;
-    private static final BigDecimal SUCCESS_VALUE = BigDecimal.ONE;
-    private static final String METRICS_COLLECTION_SUCCESSFUL = "Metrics Collection Successful";
     private String metricPrefix;
     private MetricWriteHelper metricWriter;
     private Map server;
@@ -41,29 +36,21 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
 
     public void run() {
         serverName = ActiveMQUtil.convertToString(server.get(DISPLAY_NAME), "");
-        MetricPrinter metricPrinter = new MetricPrinter(metricPrefix, serverName, metricWriter);
 
         try {
             logger.debug("ActiveMQ monitoring task initiated for server {}", serverName);
-            BigDecimal status = populateAndPrintStats();
+            populateAndPrintStats();
 
-//            metricPrinter.printMetric(metricPrinter.formMetricPath(METRICS_COLLECTION_SUCCESSFUL), status,
-//                    MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION, MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
-//                    MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
         } catch (Exception e) {
             logger.error("Error in ActiveMQ Monitoring Task for Server {}", serverName, e);
-//            metricPrinter.printMetric(metricPrinter.formMetricPath(METRICS_COLLECTION_SUCCESSFUL), BigDecimal.ZERO,
-//                    MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION, MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
-//                    MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_INDIVIDUAL);
             status = false;
 
         } finally {
-            logger.debug("ActiveMQ Monitoring Task Complete. Total number of metrics reported = {}", metricPrinter
-                    .getTotalMetricsReported());
+            logger.debug("ActiveMQ Monitoring Task Complete.");
         }
     }
 
-    private BigDecimal populateAndPrintStats() throws IOException {
+    private void populateAndPrintStats() throws IOException {
         JMXConnector jmxConnector = null;
 
         try {
@@ -75,27 +62,21 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
                 logger.debug("Processing mBeam {} from the config file", configObjName);
 
                 try {
-//                    Map<String, MetricProperties> metricProperties = propertiesBuilder.build(mBean);
-
                     Map<String, MetricProperties> metricProperties = getMapOfProperties(mBean);
-//                    MetricPropertiesBuilder propertiesBuilder = new MetricPropertiesBuilder(mBean,configObjName);
-
-
-
-//                    MetricProperties metricProperties = new MetricProperties();
-//                    metricProperties = propertiesBuilder.buildMetricProperties();
                     NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
                     List<Metric> nodeMetrics = nodeMetricsProcessor.getNodeMetrics(mBean, metricProperties, metricPrefix);
 
                     if (nodeMetrics.size() > 0) {
                         metricWriter.transformAndPrintMetrics(nodeMetrics);
-
-//                        metricPrinter.reportNodeMetrics(nodeMetrics);
                     }
                 } catch (MalformedObjectNameException e) {
                     logger.error("Illegal Object Name {} " + configObjName, e);
+                    status = false;
+
                 } catch (Exception e) {
                     logger.error("Error fetching JMX metrics for {} and mBeam = {}", serverName, configObjName, e);
+                    status = false;
+
                 }
             }
         } finally {
@@ -104,13 +85,11 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
                 logger.debug("JMX connection is closed.");
             } catch (IOException e) {
                 logger.error("Unable to close the JMX connection.");
-                return ERROR_VALUE;
             }
         }
-        return SUCCESS_VALUE;
     }
 
-    private Map<String, MetricProperties> getMapOfProperties(Map mBean){
+    public Map<String, MetricProperties> getMapOfProperties(Map mBean) {
 
         Map<String, MetricProperties> metricPropsMap = Maps.newHashMap();
         if (mBean == null || mBean.isEmpty()) {
@@ -120,15 +99,14 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
         Map configMetrics = (Map) mBean.get(METRICS);
         List includeMetrics = (List) configMetrics.get(INCLUDE);
 
-        if(includeMetrics != null){
-            for (Object metad : includeMetrics){
-                Map localMetaData = (Map)metad;
+        if (includeMetrics != null) {
+            for (Object metad : includeMetrics) {
+                Map localMetaData = (Map) metad;
                 Map.Entry entry = (Map.Entry) localMetaData.entrySet().iterator().next();
                 String metricName = entry.getKey().toString();
                 String alias = entry.getValue().toString();
-//                DefaultMetricProperties defaultMetricProperties = new DefaultMetricProperties(metricName);
                 MetricProperties props = new DefaultMetricProperties(metricName);
-                props.setAlias(alias,metricName);
+                props.setAlias(alias, metricName);
                 setProps(mBean, props); //global level
                 setProps(localMetaData, props); //local level
                 metricPropsMap.put(metricName, props);
@@ -137,13 +115,10 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
         }
 
 
-    return metricPropsMap;
+        return metricPropsMap;
     }
 
-    private void setProps (Map metadata, MetricProperties props) {
-//        if (metadata.get("metricType") != null) {
-//            props.setAggregationFields(metadata.get("metricType").toString());
-//        }
+    private void setProps(Map metadata, MetricProperties props) {
         if (metadata.get("multiplier") != null) {
             props.setMultiplier(metadata.get("multiplier").toString());
         }

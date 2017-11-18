@@ -17,6 +17,7 @@
 package com.appdynamics.extensions.activemq;
 
 import java.util.HashMap;
+
 import com.appdynamics.extensions.ABaseMonitor;
 import com.appdynamics.extensions.TaskInputArgs;
 import com.appdynamics.extensions.TasksExecutionServiceProvider;
@@ -64,7 +65,7 @@ public class ActiveMQMonitor extends ABaseMonitor {
                 for (Map server : servers) {
                     try {
                         ActiveMQMonitorTask task = createTask(server, taskExecutor);
-                        taskExecutor.submit((String)server.get("name"),task);
+                        taskExecutor.submit((String) server.get("name"), task);
                     } catch (IOException e) {
                         logger.error("Cannot construct JMX uri for {}", convertToString(server.get("displayName"), ""));
                     }
@@ -80,7 +81,7 @@ public class ActiveMQMonitor extends ABaseMonitor {
 
     @Override
     protected int getTaskCount() {
-        List<Map<String,String>> servers = (List<Map<String,String>>)configuration.getConfigYml().get("servers");
+        List<Map<String, String>> servers = (List<Map<String, String>>) configuration.getConfigYml().get("servers");
         AssertUtils.assertNotNull(servers, "The 'servers' section in config.yml is not initialised");
         return servers.size();
     }
@@ -119,48 +120,11 @@ public class ActiveMQMonitor extends ABaseMonitor {
         return null;
     }
 
-
-//    private class TaskRunner implements Runnable {
-//
-
-//    }
-
-//    private void initialize(Map<String, String> taskArgs) {
-//
-//        if (configuration == null) {
-//            MetricWriteHelper metricWriter = MetricWriteHelperFactory.create(this);
-//            MonitorConfiguration conf = new MonitorConfiguration("Custom Metrics|ActiveMQ|", new TaskRunner(), metricWriter);
-//            final String configFilePath = taskArgs.get("config-file");
-//            conf.setConfigYml(configFilePath);
-//            conf.checkIfInitialized(MonitorConfiguration.ConfItem.METRIC_PREFIX, MonitorConfiguration.ConfItem
-//                    .CONFIG_YML, MonitorConfiguration.ConfItem.HTTP_CLIENT, MonitorConfiguration.ConfItem
-//                    .EXECUTOR_SERVICE);
-//            this.configuration = conf;
-//
-//        }
-//    }
-
-//    public TaskOutput execute(Map<String, String> taskArgs, TaskExecutionContext out) throws TaskExecutionException {
-//
-//        logVersion();
-//        logger.debug("The raw arguments are: ", taskArgs);
-//        try {
-//            initialize(taskArgs);
-//            configuration.executeTask();
-//        } catch (Exception ex) {
-//            if (configuration != null && configuration.getMetricWriter() != null) {
-//                configuration.getMetricWriter().registerError(ex.getMessage(), ex);
-//            }
-//        }
-//
-//        return null;
-//    }
-
     // TODO * Fix the implementation version
     // TODO * Port to Extensions 2.0.0
     // TODO * Remove Main method and uncomment pom dependencies
 
-    public static void main (String[] args) throws TaskExecutionException {
+    public static void main(String[] args) throws TaskExecutionException {
         ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
 
         Map<String, String> argsMap = new HashMap<String, String>();

@@ -1,6 +1,9 @@
 package com.appdynamics.extensions.activemq.metrics;
 
+import com.appdynamics.extensions.activemq.ActiveMQMonitorTask;
 import com.appdynamics.extensions.activemq.JMXConnectionAdapter;
+import com.appdynamics.extensions.metrics.Metric;
+import com.appdynamics.extensions.metrics.MetricProperties;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -24,7 +27,7 @@ import java.util.Set;
 import static org.mockito.Mockito.*;
 
 public class NodeMetricsProcessorTest {
-//
+
 //    JMXConnector jmxConnector = mock(JMXConnector.class);
 //    JMXConnectionAdapter jmxConnectionAdapter = mock(JMXConnectionAdapter.class);
 //
@@ -55,7 +58,13 @@ public class NodeMetricsProcessorTest {
 //
 //        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
 //
-//        Map<String, MetricProperties> metricPropertiesMap = metricPropertiesBuilder.build(mBeans.get(0));
+//        Metric metric1 = new Metric();
+//        metric1.setMetricKey("ClientRequest|Read|Latency|Max Latency");
+//        metric1.setInstanceKey("ClientRequest|Read|Latency|");
+//        metric1.setMetricValue(new BigDecimal(200));
+//
+//        ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
+//        Map<String, MetricProperties> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
 //
 //        List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
 //        Assert.assertTrue(metrics.get(0).getMetricKey().equals("ClientRequest|Read|Latency|Max Latency"));

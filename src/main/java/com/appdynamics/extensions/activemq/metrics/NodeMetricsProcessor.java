@@ -24,7 +24,6 @@ public class NodeMetricsProcessor {
     private static final Logger logger = LoggerFactory.getLogger(NodeMetricsProcessor.class);
     private JMXConnectionAdapter jmxConnectionAdapter;
     private JMXConnector jmxConnector;
-    private final MetricValueTransformer valueConverter = new MetricValueTransformer();
     private final MetricKeyFormatter metricKeyFormatter = new MetricKeyFormatter();
 
     public NodeMetricsProcessor (JMXConnectionAdapter jmxConnectionAdapter, JMXConnector jmxConnector) {
@@ -92,24 +91,8 @@ public class NodeMetricsProcessor {
         String metricPath = metricPrefix + "|" + instanceKey+ attributeName;
 
         Metric current_metric =  new Metric(attributeName, attributeValue.toString(),metricPath, metricPropsPerMetricName);
-
-
         nodeMetrics.add(current_metric);
 
-
-//        BigDecimal metricValue = valueConverter.transform(metricPrefix + "|" + instanceKey + attributeName, attributeValue, props);
-
-//        if (metricValue != null) {
-//            Metric nodeMetric = new Metric();
-//            nodeMetric.setProperties(props);
-//            nodeMetric.setMetricName(attributeName);
-//            nodeMetric.setInstanceKey(instanceKey);
-//            String metricName = nodeMetric.getMetricNameOrAlias();
-//            String nodeMetricKey = metricKeyFormatter.getNodeKey(instance, metricName, instanceKey);
-//            nodeMetric.setMetricKey(nodeMetricKey);
-//            nodeMetric.setMetricValue(metricValue);
-//            nodeMetrics.add(nodeMetric);
-//        }
     }
 
     private boolean isCurrentObjectComposite (Attribute attribute) {

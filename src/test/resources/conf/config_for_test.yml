@@ -61,11 +61,11 @@ mbeans:
 #        - InFlightCount: "InFlightCount"
 #        - AverageMessageSize: "AverageMessageSize"
 #
-#  # This MBean will extract out Topic metrics.
-#  - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
-#    metrics:
-#      include:
-#        - AverageEnqueueTime: "AverageEnqueueTime"
+  # This MBean will extract out Topic metrics.
+  - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
+    metrics:
+      include:
+        - AverageEnqueueTime: "AverageEnqueueTime"
 #        - ConsumerCount: "ConsumerCount"
 #        - ProducerCount: "ProducerCount"
 #        - MaxEnqueueTime: "MaxEnqueueTime"
@@ -84,7 +84,7 @@ mbeans:
     metrics:
       include:
         - HeapMemoryUsage.committed : "Heap Memory Usage|Committed"
-        - HeapMemoryUsage.used : "Heap Memory Usage|Used"
-        - NonHeapMemoryUsage.committed : "Non Heap Memory Usage|Committed"
-        - NonHeapMemoryUsage.used : "Non Heap Memory Usage|Used"
+#        - HeapMemoryUsage.used : "Heap Memory Usage|Used"
+#        - NonHeapMemoryUsage.committed : "Non Heap Memory Usage|Committed"
+#        - NonHeapMemoryUsage.used : "Non Heap Memory Usage|Used"
 
