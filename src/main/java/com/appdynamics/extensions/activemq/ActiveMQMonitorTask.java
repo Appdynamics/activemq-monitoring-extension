@@ -110,11 +110,8 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
                 setProps(mBean, props); //global level
                 setProps(localMetaData, props); //local level
                 metricPropsMap.put(metricName, props);
-
             }
         }
-
-
         return metricPropsMap;
     }
 

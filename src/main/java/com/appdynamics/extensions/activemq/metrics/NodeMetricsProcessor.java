@@ -4,6 +4,7 @@ import com.appdynamics.extensions.metrics.MetricProperties;
 import com.appdynamics.extensions.activemq.ActiveMQUtil;
 import com.appdynamics.extensions.activemq.JMXConnectionAdapter;
 import com.appdynamics.extensions.activemq.filters.IncludeFilter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
@@ -61,18 +62,21 @@ public class NodeMetricsProcessor {
             MetricProperties> metricPropsPerMetricName) {
         for (Attribute attribute : attributes) {
             try {
+                String metricName = attribute.getName();
+                MetricProperties objectName = metricPropsPerMetricName.get(attribute.getName());
+
                 if (isCurrentObjectComposite(attribute)) {
                     Set<String> attributesFound = ((CompositeDataSupport) attribute.getValue()).getCompositeType()
                             .keySet();
                     for (String str : attributesFound) {
-                        String key = attribute.getName() + "." + str;
+                        String key = metricName + "." + str;
                         if (metricPropsPerMetricName.containsKey(key)) {
                             Object attributeValue = ((CompositeDataSupport) attribute.getValue()).get(str);
                             setMetricDetails(metricPrefix, key, attributeValue, instance, metricPropsPerMetricName, nodeMetrics);
                         }
                     }
                 } else {
-                    setMetricDetails(metricPrefix, attribute.getName(), attribute.getValue().toString(), instance, metricPropsPerMetricName,
+                    setMetricDetails(metricPrefix, metricName, attribute.getValue().toString(), instance, metricPropsPerMetricName,
                             nodeMetrics);
                 }
             } catch (Exception e) {
@@ -88,10 +92,12 @@ public class NodeMetricsProcessor {
             logger.error("Could not find metric properties for {} ", attributeName);
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
-        String metricPath = metricPrefix + "|" + instanceKey+ attributeName;
+        String metricPath = Strings.isNullOrEmpty(metricPrefix)?instanceKey+ attributeName :  metricPrefix + "|" + instanceKey+ attributeName;
 
         Metric current_metric =  new Metric(attributeName, attributeValue.toString(),metricPath, metricPropsPerMetricName);
         nodeMetrics.add(current_metric);
+
+//        return nodeMetrics;
 
     }
 
