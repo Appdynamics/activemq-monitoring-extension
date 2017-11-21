@@ -13,8 +13,8 @@ public class ActiveMQMonitorTest {
     public void testActiveMQMonitorExtension() throws TaskExecutionException{
         ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
 
-        Map<String, String> taskArgs = Maps.newHashMap();
-        taskArgs.put(CONFIG_ARG, "src/test/resources/conf/config.yml");
-        activeMQMonitor.execute(taskArgs, null);
+        Map<String, String> argsMap = Maps.newHashMap();
+        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/test/resources/conf/config_for_test.yml");
+        activeMQMonitor.execute(argsMap, null);
     }
 }

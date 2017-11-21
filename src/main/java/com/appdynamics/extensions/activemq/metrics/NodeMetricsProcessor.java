@@ -15,6 +15,7 @@ import javax.management.openmbean.CompositeDataSupport;
 import javax.management.remote.JMXConnector;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,9 +93,20 @@ public class NodeMetricsProcessor {
             logger.error("Could not find metric properties for {} ", attributeName);
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
-        String metricPath = Strings.isNullOrEmpty(metricPrefix)?instanceKey+ attributeName :  metricPrefix + "|" + instanceKey+ attributeName;
+//        String metricNameforMetricPath = (Strings.isNullOrEmpty(props.getAlias())) ? attributeName : props.getAlias();
+//        String metricNameforMetricPath = attributeName;
+        String metricPath = Strings.isNullOrEmpty(metricPrefix)?instanceKey+ attributeName :  metricPrefix + "|" + instanceKey + attributeName;
+        Map<String,? super Object > metricProperties = new HashMap<String, Object>();
+        metricProperties.put("alias",props.getAlias());
+        metricProperties.put("multiplier",props.getMultiplier());
+        metricProperties.put("aggregationType",props.getAggregationType());
+        metricProperties.put("clusterRollUpType",props.getClusterRollUpType());
+        metricProperties.put("timeRollUpType",props.getTimeRollUpType());
+        metricProperties.put("conversionValues",props.getConversionValues());
+        metricProperties.put("delta",props.getDelta());
 
-        Metric current_metric =  new Metric(attributeName, attributeValue.toString(),metricPath, metricPropsPerMetricName);
+
+        Metric current_metric =  new Metric(attributeName, attributeValue.toString(),metricPath, metricProperties);
         nodeMetrics.add(current_metric);
 
 //        return nodeMetrics;

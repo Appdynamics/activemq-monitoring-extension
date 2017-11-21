@@ -65,7 +65,7 @@ mbeans:
   - objectName: "org.apache.activemq:type=Broker,brokerName=*,destinationType=Topic,destinationName=*"
     metrics:
       include:
-        - AverageEnqueueTime: "AverageEnqueueTime"
+        - AverageEnqueueTime: "Average Enqueue Time"
 #        - ConsumerCount: "ConsumerCount"
 #        - ProducerCount: "ProducerCount"
 #        - MaxEnqueueTime: "MaxEnqueueTime"
