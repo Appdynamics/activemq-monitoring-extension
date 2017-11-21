@@ -120,19 +120,12 @@ public class ActiveMQMonitor extends ABaseMonitor {
         return null;
     }
 
-    // TODO * Fix the implementation version
-    // TODO * Port to Extensions 2.0.0
-    // TODO * Remove Main method and uncomment pom dependencies
 
     public static void main(String[] args) throws TaskExecutionException {
         ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
 
         Map<String, String> argsMap = new HashMap<String, String>();
-//        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/test/resources/conf/config_without_composite_object.yml");
-//        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/main/resources/conf/config.yml");
         argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/test/resources/conf/config_for_test.yml");
-
-
         activeMQMonitor.execute(argsMap, null);
     }
 

@@ -1,9 +1,10 @@
 package com.appdynamics.extensions.activemq.metrics;
-import com.appdynamics.extensions.metrics.Metric;
-import com.appdynamics.extensions.metrics.MetricProperties;
+
 import com.appdynamics.extensions.activemq.ActiveMQUtil;
 import com.appdynamics.extensions.activemq.JMXConnectionAdapter;
 import com.appdynamics.extensions.activemq.filters.IncludeFilter;
+import com.appdynamics.extensions.metrics.Metric;
+import com.appdynamics.extensions.metrics.MetricProperties;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -14,7 +15,6 @@ import javax.management.*;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.remote.JMXConnector;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,16 +24,16 @@ import static com.appdynamics.extensions.activemq.Constants.*;
 
 public class NodeMetricsProcessor {
     private static final Logger logger = LoggerFactory.getLogger(NodeMetricsProcessor.class);
+    private final MetricKeyFormatter metricKeyFormatter = new MetricKeyFormatter();
     private JMXConnectionAdapter jmxConnectionAdapter;
     private JMXConnector jmxConnector;
-    private final MetricKeyFormatter metricKeyFormatter = new MetricKeyFormatter();
 
-    public NodeMetricsProcessor (JMXConnectionAdapter jmxConnectionAdapter, JMXConnector jmxConnector) {
+    public NodeMetricsProcessor(JMXConnectionAdapter jmxConnectionAdapter, JMXConnector jmxConnector) {
         this.jmxConnectionAdapter = jmxConnectionAdapter;
         this.jmxConnector = jmxConnector;
     }
 
-    public List<Metric> getNodeMetrics (Map mBean, Map<String, MetricProperties> metricsPropertiesMap, String metricPrefix) throws
+    public List<Metric> getNodeMetrics(Map mBean, Map<String, MetricProperties> metricsPropertiesMap, String metricPrefix) throws
             MalformedObjectNameException, IOException, IntrospectionException, InstanceNotFoundException,
             ReflectionException {
         List<Metric> nodeMetrics = Lists.newArrayList();
@@ -50,7 +50,7 @@ public class NodeMetricsProcessor {
         return nodeMetrics;
     }
 
-    private List<String> applyFilters (Map aConfigMBean, List<String> metricNamesDictionary) throws
+    private List<String> applyFilters(Map aConfigMBean, List<String> metricNamesDictionary) throws
             IntrospectionException, ReflectionException, InstanceNotFoundException, IOException {
         Set<String> filteredSet = Sets.newHashSet();
         Map configMetrics = (Map) aConfigMBean.get(METRICS);
@@ -59,7 +59,7 @@ public class NodeMetricsProcessor {
         return Lists.newArrayList(filteredSet);
     }
 
-    private void  collect (String metricPrefix, List<Metric> nodeMetrics, Set<Attribute> attributes, ObjectInstance instance, Map<String,
+    private void collect(String metricPrefix, List<Metric> nodeMetrics, Set<Attribute> attributes, ObjectInstance instance, Map<String,
             MetricProperties> metricPropsPerMetricName) {
         for (Attribute attribute : attributes) {
             try {
@@ -86,34 +86,30 @@ public class NodeMetricsProcessor {
         }
     }
 
-    private void setMetricDetails (String metricPrefix, String attributeName, Object attributeValue, ObjectInstance instance, Map<String,
+    private void setMetricDetails(String metricPrefix, String attributeName, Object attributeValue, ObjectInstance instance, Map<String,
             MetricProperties> metricPropsPerMetricName, List<Metric> nodeMetrics) {
         MetricProperties props = metricPropsPerMetricName.get(attributeName);
         if (props == null) {
             logger.error("Could not find metric properties for {} ", attributeName);
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
-//        String metricNameforMetricPath = (Strings.isNullOrEmpty(props.getAlias())) ? attributeName : props.getAlias();
-//        String metricNameforMetricPath = attributeName;
-        String metricPath = Strings.isNullOrEmpty(metricPrefix)?instanceKey+ attributeName :  metricPrefix + "|" + instanceKey + attributeName;
-        Map<String,? super Object > metricProperties = new HashMap<String, Object>();
-        metricProperties.put("alias",props.getAlias());
-        metricProperties.put("multiplier",props.getMultiplier());
-        metricProperties.put("aggregationType",props.getAggregationType());
-        metricProperties.put("clusterRollUpType",props.getClusterRollUpType());
-        metricProperties.put("timeRollUpType",props.getTimeRollUpType());
-        metricProperties.put("conversionValues",props.getConversionValues());
-        metricProperties.put("delta",props.getDelta());
+        String metricPath = Strings.isNullOrEmpty(metricPrefix) ? instanceKey + attributeName : metricPrefix + "|" + instanceKey + attributeName;
+        Map<String, ? super Object> metricProperties = new HashMap<String, Object>();
+        metricProperties.put("alias", props.getAlias());
+        metricProperties.put("multiplier", props.getMultiplier());
+        metricProperties.put("aggregationType", props.getAggregationType());
+        metricProperties.put("clusterRollUpType", props.getClusterRollUpType());
+        metricProperties.put("timeRollUpType", props.getTimeRollUpType());
+        metricProperties.put("conversionValues", props.getConversionValues());
+        metricProperties.put("delta", props.getDelta());
 
 
-        Metric current_metric =  new Metric(attributeName, attributeValue.toString(),metricPath, metricProperties);
+        Metric current_metric = new Metric(attributeName, attributeValue.toString(), metricPath, metricProperties);
         nodeMetrics.add(current_metric);
-
-//        return nodeMetrics;
 
     }
 
-    private boolean isCurrentObjectComposite (Attribute attribute) {
+    private boolean isCurrentObjectComposite(Attribute attribute) {
         return attribute.getValue().getClass().equals(CompositeDataSupport.class);
     }
 }

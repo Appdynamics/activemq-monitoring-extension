@@ -6,14 +6,16 @@ import com.google.common.base.Strings;
 
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+
 import static com.appdynamics.extensions.activemq.Constants.METRICS_SEPARATOR;
+
 class MetricKeyFormatter {
 
-    private ObjectName getObjectName (ObjectInstance instance) {
+    private ObjectName getObjectName(ObjectInstance instance) {
         return instance.getObjectName();
     }
 
-    String getInstanceKey (ObjectInstance instance) {
+    String getInstanceKey(ObjectInstance instance) {
         if (instance == null) {
             return "";
         }
@@ -52,23 +54,21 @@ class MetricKeyFormatter {
         return metricsKey.toString();
     }
 
-    String getInstanceKey1(ObjectInstance instance){
-        if (instance == null){
+    String getInstanceKey1(ObjectInstance instance) {
+        if (instance == null) {
             return "";
         }
         String brokerName, type, destinationName, destinationType = "";
 
-        if(getKeyProperty(instance, "type") == null){
-             brokerName = getKeyProperty(instance, "BrokerName");
-             type = getKeyProperty(instance, "type");
-             destinationName = getKeyProperty(instance, "Destination");
-        }
-        else
-        {
-             brokerName = getKeyProperty(instance, "brokerName");
-             type = getKeyProperty(instance, "type");
-             destinationType = getKeyProperty(instance, "destinationType");
-             destinationName = getKeyProperty(instance, "destinationName");
+        if (getKeyProperty(instance, "type") == null) {
+            brokerName = getKeyProperty(instance, "BrokerName");
+            type = getKeyProperty(instance, "type");
+            destinationName = getKeyProperty(instance, "Destination");
+        } else {
+            brokerName = getKeyProperty(instance, "brokerName");
+            type = getKeyProperty(instance, "type");
+            destinationType = getKeyProperty(instance, "destinationType");
+            destinationName = getKeyProperty(instance, "destinationName");
 
         }
 
@@ -82,17 +82,14 @@ class MetricKeyFormatter {
     }
 
 
-
-
-
-    private String getKeyProperty (ObjectInstance instance, String property) {
+    private String getKeyProperty(ObjectInstance instance, String property) {
         if (instance == null) {
             return "";
         }
         return getObjectName(instance).getKeyProperty(property);
     }
 
-    String getNodeKey (ObjectInstance instance, String metricName, String instanceKey) {
+    String getNodeKey(ObjectInstance instance, String metricName, String instanceKey) {
         StringBuilder metricKey = new StringBuilder(instanceKey);
         String tier = getKeyProperty(instance, ActiveMQMBeansKeyPropertiesEnum.TIER.toString());
         String responsibility = getKeyProperty(instance, ActiveMQMBeansKeyPropertiesEnum.RESPONSIBILITY.toString());
