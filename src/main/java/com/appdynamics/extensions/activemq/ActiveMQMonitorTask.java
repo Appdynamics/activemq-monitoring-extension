@@ -155,53 +155,6 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
             props.put("aggregationType","AVERAGE" );
         }
     }
-//
-//    public Map<String, MetricProperties> getMapOfProperties(Map mBean) {
-//
-//        Map<String, MetricProperties> metricPropsMap = Maps.newHashMap();
-//        if (mBean == null || mBean.isEmpty()) {
-//            return metricPropsMap;
-//        }
-//
-//        Map configMetrics = (Map) mBean.get(METRICS);
-//        List includeMetrics = (List) configMetrics.get(INCLUDE);
-//
-//        if (includeMetrics != null) {
-//            for (Object metad : includeMetrics) {
-//                Map localMetaData = (Map) metad;
-//                Map.Entry entry = (Map.Entry) localMetaData.entrySet().iterator().next();
-//                String metricName = entry.getKey().toString();
-//                String alias = entry.getValue().toString();
-//                MetricProperties props = new DefaultMetricProperties(metricName);
-//                props.setAlias(alias, metricName);
-//                setProps(mBean, props); //global level
-//                setProps(localMetaData, props); //local level
-//                metricPropsMap.put(metricName, props);
-//            }
-//        }
-//        return metricPropsMap;
-//    }
-//
-//    private void setProps(Map metadata, MetricProperties props) {
-//        if (metadata.get("multiplier") != null) {
-//            props.setMultiplier(metadata.get("multiplier").toString());
-//        }
-//        if (metadata.get("convert") != null) {
-//            props.setConversionValues((Map) metadata.get("convert"));
-//        }
-//        if (metadata.get("delta") != null) {
-//            props.setDelta(metadata.get("delta").toString());
-//        }
-//        if (metadata.get("clusterRollUpType") != null) {
-//            props.setDelta(metadata.get("clusterRollUpType").toString());
-//        }
-//        if (metadata.get("timeRollUpType") != null) {
-//            props.setDelta(metadata.get("timeRollUpType").toString());
-//        }
-//        if (metadata.get("aggregationType") != null) {
-//            props.setAggregationType(metadata.get("aggregationType").toString());
-//        }
-//    }
 
     public void onTaskComplete() {
         logger.debug("Task Complete");

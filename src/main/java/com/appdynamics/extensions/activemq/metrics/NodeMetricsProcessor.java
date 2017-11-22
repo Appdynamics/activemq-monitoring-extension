@@ -63,8 +63,6 @@ public class NodeMetricsProcessor {
         for (Attribute attribute : attributes) {
             try {
                 String metricName = attribute.getName();
-//                MetricProperties objectName = metricPropsPerMetricName.get(attribute.getName());
-
                 if (isCurrentObjectComposite(attribute)) {
                     Set<String> attributesFound = ((CompositeDataSupport) attribute.getValue()).getCompositeType()
                             .keySet();
@@ -86,7 +84,6 @@ public class NodeMetricsProcessor {
     }
 
     private void setMetricDetails(String metricPrefix, String attributeName, Object attributeValue, ObjectInstance instance, Map<String, ? > metricPropsPerMetricName, List<Metric> nodeMetrics) {
-//        MetricProperties props = metricPropsPerMetricName.get(attributeName);
 
         Map<String, ?> props = (Map)metricPropsPerMetricName.get(attributeName);
         if (props == null) {
@@ -94,19 +91,7 @@ public class NodeMetricsProcessor {
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
         String metricPath = Strings.isNullOrEmpty(metricPrefix) ? instanceKey + attributeName : metricPrefix + "|" + instanceKey + attributeName;
-        //#TODO Why are you creating this map again??
-//        Map<String, ? super Object> metricProperties = new HashMap<String, Object>();
-//        metricProperties.put("alias", props.getAlias());
-//        metricProperties.put("multiplier", props.getMultiplier());
-//        metricProperties.put("aggregationType", props.getAggregationType());
-//        metricProperties.put("clusterRollUpType", props.getClusterRollUpType());
-//        metricProperties.put("timeRollUpType", props.getTimeRollUpType());
-//        metricProperties.put("conversionValues", props.getConversionValues());
-//        metricProperties.put("delta", props.getDelta());
-
         Metric current_metric = new Metric(attributeName, attributeValue.toString(), metricPath, props);
-
-//        Metric current_metric = new Metric(attributeName, attributeValue.toString(), metricPath, metricProperties);
         nodeMetrics.add(current_metric);
 
     }
