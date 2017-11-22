@@ -50,7 +50,7 @@ public class ActiveMQMonitor extends ABaseMonitor {
     //Required for MonitorConfiguration initialisation
     @Override
     public String getMonitorName() {
-        return "Vertica Monitor";
+        return "ActiveMQ Monitor";
     }
 
 

@@ -94,6 +94,7 @@ public class NodeMetricsProcessor {
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
         String metricPath = Strings.isNullOrEmpty(metricPrefix) ? instanceKey + attributeName : metricPrefix + "|" + instanceKey + attributeName;
+        //#TODO Why are you creating this map again??
         Map<String, ? super Object> metricProperties = new HashMap<String, Object>();
         metricProperties.put("alias", props.getAlias());
         metricProperties.put("multiplier", props.getMultiplier());
