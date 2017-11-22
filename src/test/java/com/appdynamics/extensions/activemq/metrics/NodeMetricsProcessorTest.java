@@ -3,7 +3,6 @@ package com.appdynamics.extensions.activemq.metrics;
 import com.appdynamics.extensions.activemq.ActiveMQMonitorTask;
 import com.appdynamics.extensions.activemq.JMXConnectionAdapter;
 import com.appdynamics.extensions.metrics.Metric;
-import com.appdynamics.extensions.metrics.MetricProperties;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -20,6 +19,7 @@ import javax.management.remote.JMXConnector;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,23 +56,25 @@ public class NodeMetricsProcessorTest {
 
 
         ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
-        Map<String, MetricProperties> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
+        Map<String, ?> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
 
         List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
         Assert.assertTrue(metrics.get(0).getMetricPath().equals("ClientRequest|Read|Latency|Max"));
         Assert.assertTrue(metrics.get(0).getMetricName().equals("Max"));
         Assert.assertTrue(metrics.get(0).getMetricValue().equals("200"));
-        Assert.assertTrue(metrics.get(0).getMetricProperties().getAggregationType().equals(metricPropertiesMap.get("Max").getAggregationType()));
-        Assert.assertTrue(metrics.get(0).getMetricProperties().getClusterRollUpType().equals(metricPropertiesMap.get("Max").getClusterRollUpType()));
-        Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricPropertiesMap.get("Max").getTimeRollUpType()));
+        Map<String, ? > metricProps= (Map<String, ?>) metricPropertiesMap.get("Max");
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
 
 
         Assert.assertTrue(metrics.get(1).getMetricPath().equals("ClientRequest|Read|Latency|Min"));
         Assert.assertTrue(metrics.get(1).getMetricName().equals("Min"));
         Assert.assertTrue(metrics.get(1).getMetricValue().equals("100"));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricPropertiesMap.get("Min").getAggregationType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricPropertiesMap.get("Min").getClusterRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricPropertiesMap.get("Min").getTimeRollUpType()));
+        metricProps= (Map<String, ?>) metricPropertiesMap.get("Min");
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
 
     }
 
@@ -101,22 +103,25 @@ public class NodeMetricsProcessorTest {
 
 
         ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
-        Map<String, MetricProperties> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
+        Map<String, ?> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
         List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
 //
         Assert.assertTrue(metrics.get(0).getMetricPath().equals("Memory|HeapMemoryUsage.max"));
         Assert.assertTrue(metrics.get(0).getMetricName().equals("HeapMemoryUsage.max"));
         Assert.assertTrue(metrics.get(0).getMetricValue().equals("100"));
-        Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricPropertiesMap.get("HeapMemoryUsage.max").getTimeRollUpType()));
-        Assert.assertTrue(metrics.get(0).getMetricProperties().getClusterRollUpType().equals(metricPropertiesMap.get("HeapMemoryUsage.max").getClusterRollUpType()));
-        Assert.assertTrue(metrics.get(0).getMetricProperties().getAggregationType().equals(metricPropertiesMap.get("HeapMemoryUsage.max").getAggregationType()));
+        Map<String, ? > metricProps= (Map<String, ?>) metricPropertiesMap.get("HeapMemoryUsage.max");
+
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
 
         Assert.assertTrue(metrics.get(1).getMetricPath().equals("Memory|HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricName().equals("HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricValue().equals("50"));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricPropertiesMap.get("HeapMemoryUsage.used").getTimeRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricPropertiesMap.get("HeapMemoryUsage.used").getClusterRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricPropertiesMap.get("HeapMemoryUsage.used").getAggregationType()));
+        metricProps= (Map<String, ?>) metricPropertiesMap.get("HeapMemoryUsage.used");
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
 
     }
 
@@ -144,22 +149,25 @@ public class NodeMetricsProcessorTest {
         NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
 
         ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
-        Map<String, MetricProperties> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
+        Map<String, ?> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
         List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
 
+        Map<String, ? > metricProps= (Map<String, ?>) metricPropertiesMap.get("ObjectPendingFinalizationCount");
         Assert.assertTrue(metrics.get(0).getMetricPath().equals("Memory|ObjectPendingFinalizationCount"));
         Assert.assertTrue(metrics.get(0).getMetricName().equals("ObjectPendingFinalizationCount"));
         Assert.assertTrue(metrics.get(0).getMetricValue().equals("0"));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricPropertiesMap.get("ObjectPendingFinalizationCount").getTimeRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricPropertiesMap.get("ObjectPendingFinalizationCount").getClusterRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricPropertiesMap.get("ObjectPendingFinalizationCount").getAggregationType()));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
+        Assert.assertTrue(metrics.get(0).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
 
+
+        metricProps= (Map<String, ?>) metricPropertiesMap.get("HeapMemoryUsage.used");
         Assert.assertTrue(metrics.get(1).getMetricPath().equals("Memory|HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricName().equals("HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricValue().equals("50"));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricPropertiesMap.get("HeapMemoryUsage.used").getTimeRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricPropertiesMap.get("HeapMemoryUsage.used").getClusterRollUpType()));
-        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricPropertiesMap.get("HeapMemoryUsage.used").getAggregationType()));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
+        Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
     }
 
     private CompositeDataSupport createCompositeDataSupportObject () throws OpenDataException {

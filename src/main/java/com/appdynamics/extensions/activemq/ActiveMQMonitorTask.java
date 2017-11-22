@@ -7,6 +7,7 @@ import com.appdynamics.extensions.activemq.metrics.*;
 import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.extensions.metrics.MetricProperties;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +16,7 @@ import javax.management.remote.JMXConnector;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
+import java.util.HashMap;
 import com.google.common.collect.Maps;
 
 import static com.appdynamics.extensions.activemq.Constants.DISPLAY_NAME;
@@ -62,7 +63,9 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
                 logger.debug("Processing mBeam {} from the config file", configObjName);
 
                 try {
-                    Map<String, MetricProperties> metricProperties = getMapOfProperties(mBean);
+//                    Map<String, MetricProperties> metricProperties = getMapOfProperties(mBean);
+                    Map<String, ? > metricProperties = getMapOfProperties(mBean);
+
                     NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
                     List<Metric> nodeMetrics = nodeMetricsProcessor.getNodeMetrics(mBean, metricProperties, metricPrefix);
 
@@ -88,10 +91,9 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
             }
         }
     }
+    public Map<String, ?> getMapOfProperties(Map mBean) {
 
-    public Map<String, MetricProperties> getMapOfProperties(Map mBean) {
-
-        Map<String, MetricProperties> metricPropsMap = Maps.newHashMap();
+        Map<String, ? super Object> metricPropsMap = Maps.newHashMap();
         if (mBean == null || mBean.isEmpty()) {
             return metricPropsMap;
         }
@@ -105,36 +107,101 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
                 Map.Entry entry = (Map.Entry) localMetaData.entrySet().iterator().next();
                 String metricName = entry.getKey().toString();
                 String alias = entry.getValue().toString();
-                MetricProperties props = new DefaultMetricProperties(metricName);
-                props.setAlias(alias, metricName);
-                setProps(mBean, props); //global level
-                setProps(localMetaData, props); //local level
-                metricPropsMap.put(metricName, props);
+
+                Map<String, ? super Object> metricProperties = new HashMap<String, Object>();
+                metricProperties.put("alias", Strings.isNullOrEmpty(alias)? metricName: alias);
+
+                setProps(mBean, metricProperties); //global level
+                setProps(localMetaData, metricProperties); //local level
+                metricPropsMap.put(metricName, metricProperties);
             }
         }
         return metricPropsMap;
     }
-
-    private void setProps(Map metadata, MetricProperties props) {
+    private void setProps(Map metadata, Map props) {
         if (metadata.get("multiplier") != null) {
-            props.setMultiplier(metadata.get("multiplier").toString());
+            props.put("multiplier",metadata.get("multiplier").toString() );
+        } else {
+            props.put("multiplier","1" );
         }
         if (metadata.get("convert") != null) {
-            props.setConversionValues((Map) metadata.get("convert"));
+            props.put("convert",metadata.get("convert").toString() );
+
+        } else {
+            props.put("convert",(Map)null );
         }
         if (metadata.get("delta") != null) {
-            props.setDelta(metadata.get("delta").toString());
+            props.put("delta",metadata.get("delta").toString() );
+
+        } else {
+            props.put("delta","false" );
         }
         if (metadata.get("clusterRollUpType") != null) {
-            props.setDelta(metadata.get("clusterRollUpType").toString());
+            props.put("clusterRollUpType",metadata.get("clusterRollUpType").toString() );
+
+        } else {
+            props.put("clusterRollUpType","INDIVIDUAL" );
         }
         if (metadata.get("timeRollUpType") != null) {
-            props.setDelta(metadata.get("timeRollUpType").toString());
+            props.put("timeRollUpType",metadata.get("timeRollUpType").toString() );
+
+        } else {
+            props.put("timeRollUpType","AVERAGE" );
         }
         if (metadata.get("aggregationType") != null) {
-            props.setAggregationType(metadata.get("aggregationType").toString());
+            props.put("aggregationType",metadata.get("aggregationType").toString() );
+
+        } else {
+            props.put("aggregationType","AVERAGE" );
         }
     }
+//
+//    public Map<String, MetricProperties> getMapOfProperties(Map mBean) {
+//
+//        Map<String, MetricProperties> metricPropsMap = Maps.newHashMap();
+//        if (mBean == null || mBean.isEmpty()) {
+//            return metricPropsMap;
+//        }
+//
+//        Map configMetrics = (Map) mBean.get(METRICS);
+//        List includeMetrics = (List) configMetrics.get(INCLUDE);
+//
+//        if (includeMetrics != null) {
+//            for (Object metad : includeMetrics) {
+//                Map localMetaData = (Map) metad;
+//                Map.Entry entry = (Map.Entry) localMetaData.entrySet().iterator().next();
+//                String metricName = entry.getKey().toString();
+//                String alias = entry.getValue().toString();
+//                MetricProperties props = new DefaultMetricProperties(metricName);
+//                props.setAlias(alias, metricName);
+//                setProps(mBean, props); //global level
+//                setProps(localMetaData, props); //local level
+//                metricPropsMap.put(metricName, props);
+//            }
+//        }
+//        return metricPropsMap;
+//    }
+//
+//    private void setProps(Map metadata, MetricProperties props) {
+//        if (metadata.get("multiplier") != null) {
+//            props.setMultiplier(metadata.get("multiplier").toString());
+//        }
+//        if (metadata.get("convert") != null) {
+//            props.setConversionValues((Map) metadata.get("convert"));
+//        }
+//        if (metadata.get("delta") != null) {
+//            props.setDelta(metadata.get("delta").toString());
+//        }
+//        if (metadata.get("clusterRollUpType") != null) {
+//            props.setDelta(metadata.get("clusterRollUpType").toString());
+//        }
+//        if (metadata.get("timeRollUpType") != null) {
+//            props.setDelta(metadata.get("timeRollUpType").toString());
+//        }
+//        if (metadata.get("aggregationType") != null) {
+//            props.setAggregationType(metadata.get("aggregationType").toString());
+//        }
+//    }
 
     public void onTaskComplete() {
         logger.debug("Task Complete");
