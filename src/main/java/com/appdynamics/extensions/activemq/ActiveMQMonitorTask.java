@@ -79,7 +79,6 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
                 } catch (Exception e) {
                     logger.error("Error fetching JMX metrics for {} and mBeam = {}", serverName, configObjName, e);
                     status = false;
-
                 }
             }
         } finally {

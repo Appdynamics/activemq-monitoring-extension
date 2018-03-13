@@ -125,7 +125,7 @@ public class ActiveMQMonitor extends ABaseMonitor {
         ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
 
         Map<String, String> argsMap = new HashMap<String, String>();
-        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/test/resources/conf/config_for_test.yml");
+        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/test/resources/conf/config_for_coherence.yml");
         activeMQMonitor.execute(argsMap, null);
     }
 
