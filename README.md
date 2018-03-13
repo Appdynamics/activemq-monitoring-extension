@@ -145,16 +145,24 @@ For eg.
 ## Custom Dashboard
 ![](https://raw.github.com/Appdynamics/activemq-monitoring-extension/master/ActiveMQDashboard.png)
 
-##Contributing
+## Contributing
 
 Always feel free to fork and contribute any changes directly here on GitHub.
 
-##Community
+## Community
 
-Find out more in the [AppSphere](http://appsphere.appdynamics.com/t5/eXchange/ActiveMQ-Monitoring-Extension/idi-p/5717) community.
+Find out more in the [AppSphere](https://www.appdynamics.com/community/exchange/extension/activemq-monitoring-extension/) community.
 
-##Support
+## Support
 
 For any questions or feature request, please contact [AppDynamics Support](mailto:help@appdynamics.com).
 
+
+## Version 5.0.1
+
+Fix for the incorrect metricPath was added in this release.
+
+The extension was moved to 2.0.0 framework of the extensions platform.
+
+This version adds support to composite metrics that are generated through ActiveMQ and also added elaborated tests for the whole extension.
 

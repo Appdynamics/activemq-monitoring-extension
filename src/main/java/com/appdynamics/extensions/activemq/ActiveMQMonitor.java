@@ -1,31 +1,22 @@
-/**
- * Copyright 2013 AppDynamics, Inc.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ *   Copyright 2018. AppDynamics LLC and its affiliates.
+ *   All Rights Reserved.
+ *   This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
+ *   The copyright notice above does not evidence any actual or intended publication of such source code.
+ *
  */
 
 package com.appdynamics.extensions.activemq;
 
-import com.appdynamics.TaskInputArgs;
-import com.appdynamics.extensions.conf.MonitorConfiguration;
+import java.util.HashMap;
+
+import com.appdynamics.extensions.ABaseMonitor;
+import com.appdynamics.extensions.TaskInputArgs;
+import com.appdynamics.extensions.TasksExecutionServiceProvider;
 import com.appdynamics.extensions.crypto.CryptoUtil;
-import com.appdynamics.extensions.util.MetricWriteHelper;
-import com.appdynamics.extensions.util.MetricWriteHelperFactory;
+import com.appdynamics.extensions.util.AssertUtils;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
-import com.singularity.ee.agent.systemagent.api.TaskExecutionContext;
-import com.singularity.ee.agent.systemagent.api.TaskOutput;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,32 +25,61 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static com.appdynamics.TaskInputArgs.PASSWORD_ENCRYPTED;
+import static com.appdynamics.extensions.TaskInputArgs.PASSWORD_ENCRYPTED;
 import static com.appdynamics.extensions.activemq.ActiveMQUtil.convertToString;
 
 
-public class ActiveMQMonitor extends AManagedMonitor {
+public class ActiveMQMonitor extends ABaseMonitor {
 
     private static final Logger logger = LoggerFactory.getLogger(ActiveMQMonitor.class);
 
-    private MonitorConfiguration configuration;
-
-    private static String getImplementationVersion() {
-        return ActiveMQMonitor.class.getPackage().getImplementationVersion();
+    //Required for MonitorConfiguration initialisation
+    @Override
+    protected String getDefaultMetricPrefix() {
+        return "Custom Metrics|ActiveMQ";
     }
 
-    private String logVersion() {
-        String msg = "Using ActiveMQ Monitor Version [" + getImplementationVersion() + "]";
-        logger.info(msg);
-        return msg;
+    //Required for MonitorConfiguration initialisation
+    @Override
+    public String getMonitorName() {
+        return "ActiveMQ Monitor";
     }
 
-    public ActiveMQMonitor() {
-        logger.info(logVersion());
-        System.out.print(logVersion());
+
+    @Override
+    protected void doRun(TasksExecutionServiceProvider taskExecutor) {
+        Map<String, ?> config = configuration.getConfigYml();
+        if (config != null) {
+            List<Map> servers = (List) config.get("servers");
+            AssertUtils.assertNotNull(servers, "The 'servers' section in config.yml is not initialised");
+
+            if (servers != null && !servers.isEmpty()) {
+                for (Map server : servers) {
+                    try {
+                        ActiveMQMonitorTask task = createTask(server, taskExecutor);
+                        taskExecutor.submit((String) server.get("name"), task);
+                    } catch (IOException e) {
+                        logger.error("Cannot construct JMX uri for {}", convertToString(server.get("displayName"), ""));
+                    }
+                }
+            } else {
+                logger.error("There are no servers configured");
+            }
+        } else {
+            logger.error("The config.yml is not loaded due to previous errors.The task will not run");
+        }
+
     }
 
-    private ActiveMQMonitorTask createTask(Map server) throws IOException {
+    @Override
+    protected int getTaskCount() {
+        List<Map<String, String>> servers = (List<Map<String, String>>) configuration.getConfigYml().get("servers");
+        AssertUtils.assertNotNull(servers, "The 'servers' section in config.yml is not initialised");
+        return servers.size();
+    }
+
+
+    private ActiveMQMonitorTask createTask(Map server, TasksExecutionServiceProvider taskExecutor) throws IOException {
 
         String serviceUrl = convertToString(server.get("serviceUrl"), "");
         String host = convertToString(server.get("host"), "");
@@ -69,10 +89,11 @@ public class ActiveMQMonitor extends AManagedMonitor {
         String password = getPassword(server);
 
         JMXConnectionAdapter adapter = JMXConnectionAdapter.create(serviceUrl, host, port, username, password);
-        return new ActiveMQMonitorTask.Builder().metricPrefix(
-                configuration.getMetricPrefix()).metricWriter(
-                configuration.getMetricWriter()).jmxConnectionAdapter(adapter).server(server).mbeans(
-                (List<Map>) configuration.getConfigYml().get("mbeans")).build();
+        return new ActiveMQMonitorTask.Builder().
+                metricPrefix(configuration.getMetricPrefix()).
+                metricWriter(taskExecutor.getMetricWriteHelper()).
+                jmxConnectionAdapter(adapter).server(server).
+                mbeans((List<Map>) configuration.getConfigYml().get("mbeans")).build();
     }
 
     private String getPassword(Map server) {
@@ -92,59 +113,12 @@ public class ActiveMQMonitor extends AManagedMonitor {
     }
 
 
-    private class TaskRunner implements Runnable {
+    public static void main(String[] args) throws TaskExecutionException {
+        ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
 
-        public void run() {
-            Map<String, ?> config = configuration.getConfigYml();
-            if (config != null) {
-                List<Map> servers = (List) config.get("servers");
-                if (servers != null && !servers.isEmpty()) {
-                    for (Map server : servers) {
-                        try {
-                            ActiveMQMonitorTask task = createTask(server);
-                            configuration.getExecutorService().execute(task);
-                        } catch (IOException e) {
-                            logger.error("Cannot construct JMX uri for {}", convertToString(server.get("displayName"), ""));
-                        }
-                    }
-                } else {
-                    logger.error("There are no servers configured");
-                }
-            } else {
-                logger.error("The config.yml is not loaded due to previous errors.The task will not run");
-            }
-        }
-    }
-
-    private void initialize(Map<String, String> taskArgs) {
-
-        if (configuration == null) {
-            MetricWriteHelper metricWriter = MetricWriteHelperFactory.create(this);
-            MonitorConfiguration conf = new MonitorConfiguration("Custom Metrics|ActiveMQ|", new TaskRunner(), metricWriter);
-            final String configFilePath = taskArgs.get("config-file");
-            conf.setConfigYml(configFilePath);
-            conf.checkIfInitialized(MonitorConfiguration.ConfItem.METRIC_PREFIX, MonitorConfiguration.ConfItem
-                    .CONFIG_YML, MonitorConfiguration.ConfItem.HTTP_CLIENT, MonitorConfiguration.ConfItem
-                    .EXECUTOR_SERVICE);
-            this.configuration = conf;
-
-        }
-    }
-
-    public TaskOutput execute(Map<String, String> taskArgs, TaskExecutionContext out) throws TaskExecutionException {
-
-        logVersion();
-        logger.debug("The raw arguments are: ", taskArgs);
-        try {
-            initialize(taskArgs);
-            configuration.executeTask();
-        } catch (Exception ex) {
-            if (configuration != null && configuration.getMetricWriter() != null) {
-                configuration.getMetricWriter().registerError(ex.getMessage(), ex);
-            }
-        }
-
-        return null;
+        Map<String, String> argsMap = new HashMap<String, String>();
+        argsMap.put("config-file", "/Users/bhuvnesh.kumar/repos/appdynamics/extensions/activemq-monitoring-extension/src/test/resources/conf/config_for_coherence.yml");
+        activeMQMonitor.execute(argsMap, null);
     }
 
 }

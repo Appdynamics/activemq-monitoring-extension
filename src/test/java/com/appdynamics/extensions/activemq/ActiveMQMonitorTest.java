@@ -1,8 +1,10 @@
 /*
- * Copyright 2013. AppDynamics LLC and its affiliates.
- *  All Rights Reserved.
- *  This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
- *  The copyright notice above does not evidence any actual or intended publication of such source code.
+
+ *   Copyright 2018. AppDynamics LLC and its affiliates.
+ *   All Rights Reserved.
+ *   This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
+ *   The copyright notice above does not evidence any actual or intended publication of such source code.
+ *
  */
 
 package com.appdynamics.extensions.activemq;
@@ -19,9 +21,5 @@ public class ActiveMQMonitorTest {
     @Test
     public void testActiveMQMonitorExtension() throws TaskExecutionException{
         ActiveMQMonitor activeMQMonitor = new ActiveMQMonitor();
-
-        Map<String, String> taskArgs = Maps.newHashMap();
-        taskArgs.put(CONFIG_ARG, "src/test/resources/conf/config.yml");
-        activeMQMonitor.execute(taskArgs, null);
     }
 }
