@@ -75,7 +75,7 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
 //                    Map<String, MetricProperties> metricProperties = getMapOfProperties(mBean);
                     Map<String, ? > metricProperties = getMapOfProperties(mBean);
 
-                    NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
+                    NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector, serverName);
                     List<Metric> nodeMetrics = nodeMetricsProcessor.getNodeMetrics(mBean, metricProperties, metricPrefix);
 
                     if (nodeMetrics.size() > 0) {

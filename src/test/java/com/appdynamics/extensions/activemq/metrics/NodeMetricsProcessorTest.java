@@ -39,7 +39,7 @@ public class NodeMetricsProcessorTest {
 
     JMXConnector jmxConnector = mock(JMXConnector.class);
     JMXConnectionAdapter jmxConnectionAdapter = mock(JMXConnectionAdapter.class);
-
+    String serverName = "DisplayName";
     @Test
     public void getNodeMetrics_NonCompositeObject () throws MalformedObjectNameException, IntrospectionException, ReflectionException,
             InstanceNotFoundException, IOException {
@@ -61,14 +61,14 @@ public class NodeMetricsProcessorTest {
         when(jmxConnectionAdapter.getAttributes(eq(jmxConnector), Mockito.any(ObjectName.class), Mockito.any(String[].class))).thenReturn(attributes);
 
 
-        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
+        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector, serverName);
 
 
         ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
         Map<String, ?> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
 
         List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
-        Assert.assertTrue(metrics.get(0).getMetricPath().equals("ClientRequest|Read|Latency|Max"));
+        Assert.assertTrue(metrics.get(0).getMetricPath().equals("DisplayName|ClientRequest|Read|Latency|Max"));
         Assert.assertTrue(metrics.get(0).getMetricName().equals("Max"));
         Assert.assertTrue(metrics.get(0).getMetricValue().equals("200"));
         Map<String, ? > metricProps= (Map<String, ?>) metricPropertiesMap.get("Max");
@@ -77,7 +77,7 @@ public class NodeMetricsProcessorTest {
         Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
 
 
-        Assert.assertTrue(metrics.get(1).getMetricPath().equals("ClientRequest|Read|Latency|Min"));
+        Assert.assertTrue(metrics.get(1).getMetricPath().equals("DisplayName|ClientRequest|Read|Latency|Min"));
         Assert.assertTrue(metrics.get(1).getMetricName().equals("Min"));
         Assert.assertTrue(metrics.get(1).getMetricValue().equals("100"));
         metricProps= (Map<String, ?>) metricPropertiesMap.get("Min");
@@ -108,14 +108,14 @@ public class NodeMetricsProcessorTest {
         when(jmxConnectionAdapter.getReadableAttributeNames(eq(jmxConnector), Mockito.any(ObjectInstance.class))).thenReturn(metricNames);
         when(jmxConnectionAdapter.getAttributes(eq(jmxConnector), Mockito.any(ObjectName.class), Mockito.any(String[].class))).thenReturn(attributes);
 
-        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
+        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector, serverName);
 
 
         ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
         Map<String, ?> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
         List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
 //
-        Assert.assertTrue(metrics.get(0).getMetricPath().equals("Memory|HeapMemoryUsage.max"));
+        Assert.assertTrue(metrics.get(0).getMetricPath().equals("DisplayName|Memory|HeapMemoryUsage.max"));
         Assert.assertTrue(metrics.get(0).getMetricName().equals("HeapMemoryUsage.max"));
         Assert.assertTrue(metrics.get(0).getMetricValue().equals("100"));
         Map<String, ? > metricProps= (Map<String, ?>) metricPropertiesMap.get("HeapMemoryUsage.max");
@@ -124,7 +124,7 @@ public class NodeMetricsProcessorTest {
         Assert.assertTrue(metrics.get(0).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
         Assert.assertTrue(metrics.get(0).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
 
-        Assert.assertTrue(metrics.get(1).getMetricPath().equals("Memory|HeapMemoryUsage.used"));
+        Assert.assertTrue(metrics.get(1).getMetricPath().equals("DisplayName|Memory|HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricName().equals("HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricValue().equals("50"));
         metricProps= (Map<String, ?>) metricPropertiesMap.get("HeapMemoryUsage.used");
@@ -155,14 +155,14 @@ public class NodeMetricsProcessorTest {
         when(jmxConnectionAdapter.getAttributes(eq(jmxConnector), Mockito.any(ObjectName.class), Mockito.any(String[].class))).thenReturn(attributes);
 
 
-        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector);
+        NodeMetricsProcessor nodeMetricsProcessor = new NodeMetricsProcessor(jmxConnectionAdapter, jmxConnector, serverName);
 
         ActiveMQMonitorTask activeMQMonitorTask= new ActiveMQMonitorTask();
         Map<String, ?> metricPropertiesMap = activeMQMonitorTask.getMapOfProperties(mBeans.get(0));
         List<Metric> metrics = nodeMetricsProcessor.getNodeMetrics(mBeans.get(0), metricPropertiesMap, "");
 
         Map<String, ? > metricProps= (Map<String, ?>) metricPropertiesMap.get("ObjectPendingFinalizationCount");
-        Assert.assertTrue(metrics.get(0).getMetricPath().equals("Memory|ObjectPendingFinalizationCount"));
+        Assert.assertTrue(metrics.get(0).getMetricPath().equals("DisplayName|Memory|ObjectPendingFinalizationCount"));
         Assert.assertTrue(metrics.get(0).getMetricName().equals("ObjectPendingFinalizationCount"));
         Assert.assertTrue(metrics.get(0).getMetricValue().equals("0"));
         Assert.assertTrue(metrics.get(0).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
@@ -171,13 +171,14 @@ public class NodeMetricsProcessorTest {
 
 
         metricProps= (Map<String, ?>) metricPropertiesMap.get("HeapMemoryUsage.used");
-        Assert.assertTrue(metrics.get(1).getMetricPath().equals("Memory|HeapMemoryUsage.used"));
+        Assert.assertTrue(metrics.get(1).getMetricPath().equals("DisplayName|Memory|HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricName().equals("HeapMemoryUsage.used"));
         Assert.assertTrue(metrics.get(1).getMetricValue().equals("50"));
         Assert.assertTrue(metrics.get(1).getMetricProperties().getTimeRollUpType().equals(metricProps.get("timeRollUpType")));
         Assert.assertTrue(metrics.get(1).getMetricProperties().getClusterRollUpType().equals(metricProps.get("clusterRollUpType")));
         Assert.assertTrue(metrics.get(1).getMetricProperties().getAggregationType().equals(metricProps.get("aggregationType")));
     }
+
 
     private CompositeDataSupport createCompositeDataSupportObject () throws OpenDataException {
         String typeName = "type";

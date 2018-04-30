@@ -36,10 +36,12 @@ public class NodeMetricsProcessor {
     private final MetricKeyFormatter metricKeyFormatter = new MetricKeyFormatter();
     private JMXConnectionAdapter jmxConnectionAdapter;
     private JMXConnector jmxConnector;
+    private String serverName;
 
-    public NodeMetricsProcessor(JMXConnectionAdapter jmxConnectionAdapter, JMXConnector jmxConnector) {
+    public NodeMetricsProcessor(JMXConnectionAdapter jmxConnectionAdapter, JMXConnector jmxConnector, String serverName) {
         this.jmxConnectionAdapter = jmxConnectionAdapter;
         this.jmxConnector = jmxConnector;
+        this.serverName = serverName;
     }
 
     public List<Metric> getNodeMetrics(Map mBean, Map<String, ? > metricsPropertiesMap, String metricPrefix) throws
@@ -99,9 +101,10 @@ public class NodeMetricsProcessor {
             logger.error("Could not find metric properties for {} ", attributeName);
         }
         String instanceKey = metricKeyFormatter.getInstanceKey(instance);
-        String metricPath = Strings.isNullOrEmpty(metricPrefix) ? instanceKey + attributeName : metricPrefix + "|" + instanceKey + attributeName;
+        String metricPath = Strings.isNullOrEmpty(metricPrefix) ? serverName + "|" + instanceKey + attributeName : metricPrefix + "|"+ serverName + "|" + instanceKey + attributeName;
         Metric current_metric = new Metric(attributeName, attributeValue.toString(), metricPath, props);
         nodeMetrics.add(current_metric);
+
 
     }
 
