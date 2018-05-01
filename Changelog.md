@@ -1,6 +1,9 @@
 Changes
 =======
 
+# 5,0,4
+* Each metric will have the server name in its metric path as well.
+* Status metric has been added for each metric called HeartBeat.
 
 # 5.0.3
 * Added fix for the correct queues in the metricPath that was overwritten while updating licenses.

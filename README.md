@@ -145,24 +145,43 @@ For eg.
 ## Custom Dashboard
 ![](https://raw.github.com/Appdynamics/activemq-monitoring-extension/master/ActiveMQDashboard.png)
 
+
+
+## Credentials Encryption
+Please visit [this](https://community.appdynamics.com/t5/Knowledge-Base/How-to-use-Password-Encryption-with-Extensions/ta-p/29397) page to get detailed instructions on password encryption. The steps in this document will guide you through the whole process.
+
+## Extensions Workbench
+Workbench is an inbuilt feature provided with each extension in order to assist you to fine tune the extension setup before you actually deploy it on the controller. Please review the following [document](https://community.appdynamics.com/t5/Knowledge-Base/How-to-use-the-Extensions-WorkBench/ta-p/30130) for how to use the Extensions WorkBench
+
+## Troubleshooting
+Please follow the steps listed in the [extensions troubleshooting document](https://community.appdynamics.com/t5/Knowledge-Base/How-to-troubleshoot-missing-custom-metrics-or-extensions-metrics/ta-p/28695) in order to troubleshoot your issue. These are a set of common issues that customers might have faced during the installation of the extension. If these don't solve your issue, please follow the last step on the troubleshooting-document to contact the support team.
+
+## Support Tickets
+If after going through the Troubleshooting Document you have not been able to get your extension working, please file a ticket and add the following information.
+
+Please provide the following in order for us to assist you better.  
+
+1. Stop the running machine agent .
+2. Delete all existing logs under <MachineAgent>/logs .
+3. Please enable debug logging by editing the file <MachineAgent>/conf/logging/log4j.xml. Change the level value of the following <logger> elements to debug. 
+   ```
+   <logger name="com.singularity">
+   <logger name="com.appdynamics">
+     ```
+4. Start the machine agent and please let it run for 10 mins. Then zip and upload all the logs in the directory <MachineAgent>/logs/*.
+5. Attach the zipped <MachineAgent>/conf/* directory here.
+ 6. Attach the zipped <MachineAgent>/monitors/<ExtensionMonitor> directory here .
+
+For any support related questions, you can also contact help@appdynamics.com.
+
 ## Contributing
+Always feel free to fork and contribute any changes directly via [GitHub](https://github.com/Appdynamics/activemq-monitoring-extension).
 
-Always feel free to fork and contribute any changes directly here on GitHub.
-
-## Community
-
-Find out more in the [AppSphere](https://www.appdynamics.com/community/exchange/extension/activemq-monitoring-extension/) community.
-
-## Support
-
-For any questions or feature request, please contact [AppDynamics Support](mailto:help@appdynamics.com).
-
-
-## Version 5.0.1
-
-Fix for the incorrect metricPath was added in this release.
-
-The extension was moved to 2.0.0 framework of the extensions platform.
-
-This version adds support to composite metrics that are generated through ActiveMQ and also added elaborated tests for the whole extension.
-
+## Version
+|          Name            |  Version   |
+|--------------------------|------------|
+|Extension Version         |5.0.4       |
+|Controller Compatibility  |3.7 or Later|
+|Product Tested On         |ActiveMQ 5.15.2 |
+|Last Update               |05/01/2018 |
+|List of Changes           |[Change log](https://github.com/Appdynamics/activemq-monitoring-extension/blob/master/Changelog.md) |
