@@ -2,7 +2,7 @@
 
 This extension works only with the standalone machine agent.
 
-##Use Case
+## Use Case
 
 ActiveMQ is an open source, JMS 1.1 compliant, message-oriented middleware (MOM) from the Apache Software Foundation that provides high-availability, performance, scalability, reliability and security for enterprise messaging. 
 The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging server and uploads them to the AppDynamics Metric Browser. 
@@ -27,7 +27,7 @@ Before configuring the extension, please make sure to run the below steps to che
 mbean shows up.
 
 
-##Installation
+## Installation
 
 1. Run 'mvn clean install' from the activemq-monitoring-extension directory and find the ActiveMQMonitor.zip in the "target" folder.
 2. Unzip as "ActiveMQMonitor" and copy the "ActiveMQMonitor" directory to `<MACHINE_AGENT_HOME>/monitors`
