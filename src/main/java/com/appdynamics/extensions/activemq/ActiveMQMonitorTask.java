@@ -133,7 +133,7 @@ public class ActiveMQMonitorTask implements AMonitorTaskRunnable {
             props.put("multiplier","1" );
         }
         if (metadata.get("convert") != null) {
-            props.put("convert",metadata.get("convert").toString() );
+            props.put("convert",metadata.get("convert") );
 
         } else {
             props.put("convert",(Map)null );

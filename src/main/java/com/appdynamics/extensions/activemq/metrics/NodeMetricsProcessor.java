@@ -85,7 +85,7 @@ public class NodeMetricsProcessor {
                         }
                     }
                 } else {
-                    setMetricDetails(metricPrefix, metricName, attribute.getValue().toString(), instance, (Map)metricPropsPerMetricName,
+                    setMetricDetails(metricPrefix, metricName, attribute.getValue(), instance, (Map)metricPropsPerMetricName,
                             nodeMetrics);
                 }
             } catch (Exception e) {
