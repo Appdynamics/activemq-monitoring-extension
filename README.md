@@ -180,8 +180,8 @@ Always feel free to fork and contribute any changes directly via [GitHub](https:
 ## Version
 |          Name            |  Version   |
 |--------------------------|------------|
-|Extension Version         |5.0.4       |
+|Extension Version         |5.0.6       |
 |Controller Compatibility  |3.7 or Later|
 |Product Tested On         |ActiveMQ 5.15.2 |
-|Last Update               |05/01/2018 |
+|Last Update               |08/22/2019 |
 |List of Changes           |[Change log](https://github.com/Appdynamics/activemq-monitoring-extension/blob/master/Changelog.md) |
