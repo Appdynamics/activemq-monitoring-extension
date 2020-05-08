@@ -1,8 +1,11 @@
 mbeans:
-  - objectName: "org.apache.activemq.metrics:type=ClientRequest,scope=Read,name=Latency"
+#mBeans for Cache Metrics
+  - objectName: "org.apache.cassandra.metrics:type=ClientRequest,scope=Read,name=Latency"
+    mbeanKeys: ["type","scope","name"]
     metrics:
       include:
-        - Max : "Max Latency"
+        - name: "Max"
+          alias: "Max Latency"
           multiplier: ""
           delta: false
           aggregationType: "OBSERVATION"

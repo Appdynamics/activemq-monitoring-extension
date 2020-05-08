@@ -1,28 +1,17 @@
 /*
-
- *   Copyright 2018. AppDynamics LLC and its affiliates.
+ *   Copyright 2019 . AppDynamics LLC and its affiliates.
  *   All Rights Reserved.
  *   This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  *   The copyright notice above does not evidence any actual or intended publication of such source code.
  *
-
  */
 
-package com.appdynamics.extensions.activemq;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+package com.appdynamics.extensions.activemq.utils;
 
 /**
- * Created by bhuvnesh.kumar on 8/9/17.
+ * Created by bhuvnesh.kumar on 2/26/18.
  */
-public class ActiveMQUtil {
-    public static String convertToString(final Object field, final String defaultStr) {
-        if (field == null) {
-            return defaultStr;
-        }
-        return field.toString();
-    }
+public class JMXUtil {
 
     public static boolean isCompositeObject(String objectName) {
         return (objectName.indexOf('.') != -1);
@@ -31,5 +20,4 @@ public class ActiveMQUtil {
     public static String getMetricNameFromCompositeObject(String objectName) {
         return objectName.split("\\.")[0];
     }
-
 }
