@@ -1,7 +1,12 @@
 Changes
 =======
+#5.1
+* Update to config.yml structure
+* Update to logger
+* Support for List and Map Metrics
+* Moved to Extension Commons 2.2.3
 
-# 5,0,4
+# 5.0.4
 * Each metric will have the server name in its metric path as well.
 * Status metric has been added for each metric called HeartBeat.
 
