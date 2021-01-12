@@ -1,5 +1,8 @@
-Changes
-=======
+# AppDynamics Extensions ActiveMQ CHANGELOG
+
+#5.1.1 - Jan 12, 2021
+* Updated extension to appd-exts-commons 2.2.4
+
 #5.1
 * Update to config.yml structure
 * Update to logger

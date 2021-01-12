@@ -240,10 +240,10 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
 ## Version
 |          Name            |  Version   |
 |--------------------------|------------|
-|Extension Version         |5.1       |
+|Extension Version         |5.1.1       |
 |Controller Compatibility  |3.7 or Later|
-|Product Tested On         |ActiveMQ 5.15.2 |
-|Last Update               |05/5/2020 |
+|Product Tested On         |ActiveMQ 5.16.0 |
+|Last Update               |12/01/2021 |
 |List of Changes           |[Change log](https://github.com/Appdynamics/activemq-monitoring-extension/blob/master/Changelog.md) |
 
 
