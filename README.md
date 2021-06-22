@@ -6,6 +6,7 @@ ActiveMQ is an open source, JMS 1.1 compliant, message-oriented middleware (MOM)
 The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging server and uploads them to the AppDynamics Metric Browser. 
 
 ## Prerequisites 
+
 1. Before the extension is installed, the prerequisites mentioned [here](https://community.appdynamics.com/t5/Knowledge-Base/Extensions-Prerequisites-Guide/ta-p/35213) need to be met. Please do not proceed with the extension installation if the specified prerequisites are not met.
 2. JMX must be enabled in your JMX based server for this extension to gather metrics. Please make sure you have all the permissions before deploying the extension.  To enable, please see [these instructions](http://activemq.apache.org/jmx.html)
 3. In order to use this extension, you do need a [Standalone JAVA Machine Agent](https://docs.appdynamics.com/display/PRO44/Java+Agent) or [SIM Agent](https://docs.appdynamics.com/display/PRO44/Server+Visibility). 
@@ -98,9 +99,7 @@ Configure the "tier" under which the metrics need to be reported. This can be do
 ```
 
 The objectNames mentioned in the above yaml may not match your environment exactly. Please use jconsole to extract the objectName and configure it
-accordingly in the config.yaml. 
-
-
+accordingly in the config.yaml.
 
 ## Metrics
 
@@ -213,20 +212,9 @@ To do so, list the metrics you would like to retrieve from the map in the follow
 
 
 
-## metricPathReplacements
+## metricPathReplacements ##
+
 Please visit [this](https://community.appdynamics.com/t5/Knowledge-Base/Metric-Path-CharSequence-Replacements-in-Extensions/ta-p/35412) page to get detailed instructions on configuring Metric Path Character sequence replacements in Extensions.
-
-## Contributing
-Always feel free to fork and contribute any changes directly here on [GitHub].
-
-## Community
-Find out more in the [AppDynamics Exchange] community.
-
-## Troubleshooting ##
-
-Please follow the steps listed in this [troubleshooting-document] in order to troubleshoot your issue. 
-These are a set of common issues that customers might have faced during the installation of the extension. 
-If these don't solve your issue, please follow the last step on the [troubleshooting-document] to contact the support team.
 
 ## Credentials Encryption ##
 
@@ -234,10 +222,39 @@ Please visit [Encryption Guidelines] to get detailed instructions on password en
 If you want to use password encryption, please send arguments as connectionProperties. You will have to fill in the encrypted Password and Encryption Key fields in the config but you will also have to give an empty "" value to the password field and the encrypted password will be automatically picked up.
 
 ## Extensions Workbench ##
+
 Workbench is an inbuilt feature provided with each extension in order to assist you to fine tune the extension setup before you actually
  deploy it on the controller. Please review the following document on [How to use the Extensions WorkBench ]
 
-## Version
+## Troubleshooting ##
+
+Please follow the steps listed in this [troubleshooting-document] in order to troubleshoot your issue.
+These are a set of common issues that customers might have faced during the installation of the extension.
+If these don't solve your issue, please follow the last step on the [troubleshooting-document] to contact the support team.
+
+## Support Tickets ##
+
+If after going through the [Troubleshooting Document](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695) you have not been able to get your extension working, please file a ticket with the following information:
+
+1. Stop the running machine agent.
+2. Delete all existing logs under <MachineAgent>/logs.
+3. Please enable debug logging by editing the file <MachineAgent>/conf/logging/log4j.xml. Change the level value of the following <logger> elements to debug.
+    ```
+    <logger name="com.singularity">
+    <logger name="com.appdynamics">
+   ```
+4. Start the machine agent and please let it run for 10 mins. Then zip and upload all the logs in the directory <MachineAgent>/logs/*.
+   Attach the zipped <MachineAgent>/conf/* directory.
+5. Attach the zipped <MachineAgent>/monitors/ExtensionFolderYouAreHavingIssuesWith directory.
+
+For any support related questions, you can also contact help@appdynamics.com.
+
+## Contributing ##
+
+Always feel free to fork and contribute any changes directly here on [GitHub].
+
+## Version ##
+
 |          Name            |  Version   |
 |--------------------------|------------|
 |Extension Version         |5.1.1       |
