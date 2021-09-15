@@ -9,20 +9,15 @@ The ActiveMQ Monitoring extension collects metrics from an ActiveMQ messaging se
 
 1. Before the extension is installed, the prerequisites mentioned [here](https://community.appdynamics.com/t5/Knowledge-Base/Extensions-Prerequisites-Guide/ta-p/35213) need to be met. Please do not proceed with the extension installation if the specified prerequisites are not met.
 2. JMX must be enabled in your JMX based server for this extension to gather metrics. Please make sure you have all the permissions before deploying the extension.  To enable, please see [these instructions](http://activemq.apache.org/jmx.html)
-3. In order to use this extension, you do need a [Standalone JAVA Machine Agent](https://docs.appdynamics.com/display/PRO44/Java+Agent) or [SIM Agent](https://docs.appdynamics.com/display/PRO44/Server+Visibility). 
-For more details on downloading these products, please  visit [download.appdynamics.com](https://download.appdynamics.com/).
-
 
 ## Installation
 
-1. To build from source, clone this repository and run 'mvn clean install'. This will produce a JMXMonitor-VERSION.zip in the target directory. 
-Alternatively, download the latest release archive from [Github](https://github.com/Appdynamics/activemq-monitoring-extension/releases).
+1. To build from source, clone this repository and run 'mvn clean install'. This will produce a ActiveMQ-VERSION.zip in the target directory. 
 2. Unzip the file ActiveMQ-[version].zip into `<MACHINE_AGENT_HOME>/monitors/`.
 3. In the newly created directory "ActiveMQ", edit the config.yml configuring the parameters (See Configuration section below).
 4. Make sure you place it in the right directory on your computer. 
 5. Restart the Machine Agent
-6. In the AppDynamics Metric Browser, look for: Application Infrastructure Performance  | \<Tier\> | Custom Metrics | ActiveMQ Monitor  .
-7. If you're monitoring multiple ActiveMQ instances, follow the above steps for every ActiveMQ instance that you want to monitor.
+6. If you're monitoring multiple ActiveMQ instances, follow the above steps for every ActiveMQ instance that you want to monitor.
 
 **NOTE:** Please place the extension in the **"monitors"** directory of your Machine Agent installation
  directory. Do not place the extension in the **"extensions"** directory of your Machine Agent 
@@ -31,7 +26,7 @@ Alternatively, download the latest release archive from [Github](https://github.
 
 ## Configuration ##
 
-Note : Please make sure to not use tab (\t) while editing yaml files. You may want to validate the yaml file using a [yaml validator](http://yamllint.com/)
+Note : Please make sure to not use tab (\t) while editing yaml files. You may want to validate the yaml file using a [yaml validator](https://jsonformatter.org/yaml-validator)
 
 Before configuring the extension, please make sure to run the below steps to check if the set up is correct.
 
@@ -89,8 +84,7 @@ servers:
 
 **You should either use the Normal PASSWORD or the encryptedPassword and encryptionKey in order to establish a connection. Please read below to find more information on Password Encryption.**
 
-7. 
-The metricPrefix of the extension has to be configured as [specified here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
+7. The metricPrefix of the extension has to be configured as [specified here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
 Configure the "tier" under which the metrics need to be reported. This can be done by changing the value of `<TIER NAME OR TIER ID>` in
      metricPrefix: "Server|Component:`<TIER NAME OR TIER ID>`|Custom Metrics|ActiveMQ". For example,
     
@@ -240,13 +234,12 @@ Always feel free to fork and contribute any changes directly here on [GitHub].
 |          Name            |  Version   |
 |--------------------------|------------|
 |Extension Version         |5.1.1       |
-|Controller Compatibility  |3.7 or Later|
 |Product Tested On         |ActiveMQ 5.16.0 |
 |Last Update               |12/01/2021 |
-|List of Changes           |[Change log](https://github.com/Appdynamics/activemq-monitoring-extension/blob/master/Changelog.md) |
+|Changes list           |[Change log](https://github.com/Appdynamics/activemq-monitoring-extension/blob/master/Changelog.md) |
 
 
-**List of Changes can be found in the [Changelog.md]**
+**Note**: While extensions are maintained and supported by customers under the open-source licensing model, they interact with agents and Controllers that are subject to [AppDynamics’ maintenance and support policy](https://docs.appdynamics.com/latest/en/product-and-release-announcements/maintenance-support-for-software-versions). Some extensions have been tested with AppDynamics 4.5.13+ artifacts, but you are strongly recommended against using versions that are no longer supported.
 
 
 [How to use the Extensions WorkBench ]: https://community.appdynamics.com/t5/Knowledge-Base/How-to-use-the-Extensions-WorkBench/ta-p/30130
